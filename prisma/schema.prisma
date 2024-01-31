@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// Transparencia 
+
+model Section{
+  id String @id @default(uuid())
+  name String
+  type String? 
+  description String?
+  priority Int? @default(1)
+  status Boolean? @default(true)
+  url String?
+  subsection Subsection[]
+  documents Documents[]
+}
+
+model Subsection{
+  id String @id @default(uuid())
+  name String
+  type String? 
+  description String?
+  priority Int? @default(1)
+  status Boolean? @default(true)
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sectionId String
+  documents Documents[]
+  url String?
+}
+
+model Documents{
+  id String @id @default(uuid())
+  name String
+  description String?
+  path String?
+  date DateTime? @default(now())
+  size String?
+  createdAt DateTime @default(now())
+  subsection Subsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subsectionId String?
+  section Section? @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sectionId String?
+  url String?
+
+}
+
+// Institución
+
+model News{
+  id String @id @default(uuid())
+  image String?
+  news_metadata Json[]
+  created_At DateTime? @default(now())
+  updated_At DateTime? @default(now())
+  status Boolean? @default(true)
+}
+
+model Event{
+  id String @id @default(uuid())
+  metadata Json[]
+  image String?
+  start_Date DateTime?
+  end_Date DateTime?
+  formLink String?
+  created_At DateTime? @default(now())
+  updated_At DateTime? @default(now())
+  status Boolean? @default(true)
+  Gallery Gallery[]
+}
+
+model Gallery{
+  id String @id @default(uuid())
+  name String
+  size String?
+  type String?
+  path String?
+  created_At DateTime? @default(now())
+  updated_At DateTime? @default(now())
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  eventId String
+}
