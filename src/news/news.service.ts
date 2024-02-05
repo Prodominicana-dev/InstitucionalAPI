@@ -130,21 +130,27 @@ export class NewsService {
   }
 
   // Obtener todas las categorias de noticias, dependiendo el idioma
-  async getCategories(lang: string): Promise<any> {
+  async getCategories(): Promise<any> {
     try {
-      const news = await this.prisma.news.findMany({
-        where: { status: true },
-      });
+      const news = await this.prisma.news.findMany({});
 
-      const categories = news.flatMap((n: News) => {
+      const es = news.flatMap((n: News) => {
         return n.news_metadata
-          .filter((m: any) => m.language === lang)
+          .filter((m: any) => m.language === 'es')
           .map((filteredNews: any) => ({
             category: filteredNews.category,
           }));
       });
 
-      return categories;
+      const en = news.flatMap((n: News) => {
+        return n.news_metadata
+          .filter((m: any) => m.language === 'en')
+          .map((filteredNews: any) => ({
+            category: filteredNews.category,
+          }));
+      });
+
+      return { es, en };
     } catch (error) {
       throw new Error(error);
     }

@@ -33,11 +33,11 @@ export class NewsController {
   @UseInterceptors(FilesInterceptor('files'))
   async createNews(@Body() body: any, @Res() res, @UploadedFiles() files?) {
     try {
-      // const id = res.req.headers.authorization;
-      // const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      // const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      // const auth0Token = await validateUser(idDecrypted, 'create:news');
-      // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
+      const id = res.req.headers.authorization;
+      const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
+      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
+      const auth0Token = await validateUser(idDecrypted, 'create:news');
+      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const news = await this.newsService.create(body);
       /* Crear ruta de las noticias */
       console.log(news);
@@ -133,10 +133,10 @@ export class NewsController {
   }
 
   /* Obtener todas las categorias dependiendo el idioma */
-  @Get(':lang/news/c/all')
-  async getAllCategories(@Param('lang') lang: string, @Res() res) {
+  @Get('news/c/all')
+  async getAllCategories(@Res() res) {
     try {
-      const categories = await this.newsService.getCategories(lang);
+      const categories = await this.newsService.getCategories();
       return res.status(200).json(categories);
     } catch (error) {
       return res.status(404).json({ error });
