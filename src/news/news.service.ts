@@ -97,7 +97,14 @@ export class NewsService {
 
       if (!news) throw new Error('Noticia no encontrada');
       // return la news_metadata que coincida con el idioma
-      return news.news_metadata.find((n: any) => n.language === lang);
+      return news.news_metadata
+        .filter((m: any) => m.language === lang)
+        .map((filteredNews: any) => ({
+          id: news.id,
+          image: news.image,
+          status: news.status,
+          ...filteredNews,
+        }));
     } catch (error) {
       throw new Error(error);
     }
@@ -110,9 +117,6 @@ export class NewsService {
         orderBy: {
           created_At: 'desc',
         },
-        where: {
-          status: true,
-        },
       });
 
       return news.flatMap((n: News) => {
@@ -120,10 +124,43 @@ export class NewsService {
           .filter((m: any) => m.language === lang)
           .map((filteredNews: any) => ({
             id: n.id,
+            image: n.image,
             status: n.status,
             ...filteredNews,
           }));
       });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  // Obtener noticia por id, pero sin lenguaje. retornar un es: con la data en español y en: con la data en ingles
+  async findOneById(id: string): Promise<any> {
+    try {
+      const news = await this.prisma.news.findUnique({
+        where: { id },
+      });
+
+      if (!news) throw new Error('Noticia no encontrada');
+      const es = news.news_metadata
+        .filter((m: any) => m.language === 'es')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+
+      const en = news.news_metadata
+        .filter((m: any) => m.language === 'en')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+      const data = {
+        id: news.id,
+        image: news.image,
+        status: news.status,
+        es: es[0],
+        en: en[0],
+      };
+      return data;
     } catch (error) {
       throw new Error(error);
     }

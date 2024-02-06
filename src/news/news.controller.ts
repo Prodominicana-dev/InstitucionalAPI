@@ -52,7 +52,7 @@ export class NewsController {
         }
         const fileName = file.originalname;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        const pathImage = `public/news/${news.id}/${fileName}`;
+        const pathImage = `${fileName}`;
         news.image = pathImage;
         await this.newsService.update(news.id, news);
       });
@@ -74,14 +74,14 @@ export class NewsController {
     @UploadedFiles() files?,
   ) {
     try {
-      // const id = res.req.headers.authorization;
-      // const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      // const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      // const auth0Token = await validateUser(idDecrypted, 'create:news');
-      // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
+      const _id = res.req.headers.authorization;
+      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
+      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
+      const auth0Token = await validateUser(idDecrypted, 'create:news');
+      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const news = await this.newsService.update(id, body);
       if (files === undefined || files.length === 0) {
-        return res.status(200).json({ news });
+        return res.status(200).json(news);
       }
 
       /* Crear ruta de las noticias */
@@ -97,20 +97,50 @@ export class NewsController {
       await files.forEach(async (file) => {
         const fileName = file.originalname;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        news.image = `public/news/${news.id}/${fileName}`;
+        news.image = `${fileName}`;
         await this.newsService.update(news.id, news);
-        return res.status(200).json({ news });
+        return res.status(200).json(news);
       });
     } catch (error) {
       return res.status(500).json({ error });
     }
   }
 
+  @Get('/news/images/:id/:name')
+  getImages(
+    @Param('id') id: string,
+    @Param('name') imageName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    res.set({ 'Content-Type': 'image/jpeg' });
+    const imagePath = path.join(process.cwd(), `public/news/${id}`, imageName);
+    //   const mimeType = mime.lookup(imageName);
+    //   if (!mimeType) {
+    //     return undefined;
+    //   }
+    const fileStream = fs.createReadStream(imagePath);
+    const streamableFile = new StreamableFile(fileStream);
+    //   streamableFile.options.type = mimeType
+    return streamableFile;
+  }
   /* Obtener todos las noticias */
   @Get(':lang/news')
   async getAllEsNews(@Param('lang') lang: string, @Res() res) {
     try {
       const news = await this.newsService.findAll(lang);
+      console.log(news);
+      return res.status(200).json(news);
+    } catch (error) {
+      return res.status(404).json({ error });
+    }
+  }
+
+  // Obtener por id
+  @Get('news/:id')
+  async getOneNewsById(@Param('id') id: string, @Res() res) {
+    try {
+      const news = await this.newsService.findOneById(id);
+      console.log(news);
       return res.status(200).json(news);
     } catch (error) {
       return res.status(404).json({ error });
@@ -126,6 +156,7 @@ export class NewsController {
   ) {
     try {
       const news = await this.newsService.findOne(id, lang);
+      console.log(news);
       return res.status(200).json(news);
     } catch (error) {
       return res.status(404).json({ error });
