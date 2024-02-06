@@ -146,7 +146,19 @@ export class EventsController {
   async getAllEvents(@Param('lang') lang: string, @Res() res) {
     try {
       const events = await this.eventsService.findAllEnable(lang);
-      return res.status(200).json({ events });
+      return res.status(200).json(events);
+    } catch (error) {
+      return res.status(404).json({ error });
+    }
+  }
+
+  // Obtener por id
+  @Get('events/:id')
+  async getOneNewsById(@Param('id') id: string, @Res() res) {
+    try {
+      const event = await this.eventsService.findOneById(id);
+      console.log(event);
+      return res.status(200).json(event);
     } catch (error) {
       return res.status(404).json({ error });
     }
@@ -161,7 +173,7 @@ export class EventsController {
   ) {
     try {
       const event = await this.eventsService.findOne(id, lang);
-      return res.status(200).json({ event });
+      return res.status(200).json(event);
     } catch (error) {
       return res.status(404).json({ error });
     }

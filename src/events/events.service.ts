@@ -82,10 +82,41 @@ export class EventsService {
     });
   }
 
+  // Obtener evento por id, pero sin lenguaje. retornar un es: con la data en español y en: con la data en ingles
+  async findOneById(id: string): Promise<any> {
+    try {
+      const event = await this.prisma.event.findUnique({
+        where: { id },
+      });
+
+      if (!event) throw new Error('Noticia no encontrada');
+      const es = event.metadata
+        .filter((m: any) => m.language === 'es')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+
+      const en = event.metadata
+        .filter((m: any) => m.language === 'en')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+      const data = {
+        id: event.id,
+        image: event.image,
+        status: event.status,
+        es: es[0],
+        en: en[0],
+      };
+      return data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   // Obtener todos los eventos por idioma
   async findAllEnable(lang: string): Promise<Event[]> {
     return this.prisma.event.findMany({
-      where: { status: true },
       orderBy: { start_Date: 'desc' },
     });
   }
