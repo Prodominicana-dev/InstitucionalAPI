@@ -105,6 +105,9 @@ export class EventsService {
         id: event.id,
         image: event.image,
         status: event.status,
+        start_Date: event.start_Date,
+        end_Date: event.end_Date,
+        formLink: event.formLink,
         es: es[0],
         en: en[0],
       };
@@ -116,8 +119,19 @@ export class EventsService {
 
   // Obtener todos los eventos por idioma
   async findAllEnable(lang: string): Promise<Event[]> {
-    return this.prisma.event.findMany({
+    const events = await this.prisma.event.findMany({
       orderBy: { start_Date: 'desc' },
+    });
+
+    return events.flatMap((e: Event) => {
+      return e.metadata
+        .filter((m: any) => m.language === lang)
+        .map((filteredEvent: any) => ({
+          id: e.id,
+          image: e.image,
+          status: e.status,
+          ...filteredEvent,
+        }));
     });
   }
 

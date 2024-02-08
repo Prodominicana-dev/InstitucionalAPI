@@ -38,6 +38,7 @@ export class NewsController {
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
       const auth0Token = await validateUser(idDecrypted, 'create:news');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
+      console.log(body);
       const news = await this.newsService.create(body);
       /* Crear ruta de las noticias */
       console.log(news);
@@ -52,9 +53,6 @@ export class NewsController {
         }
         const fileName = file.originalname;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        const pathImage = `${fileName}`;
-        news.image = pathImage;
-        await this.newsService.update(news.id, news);
       });
 
       return res.status(201).json(news);
@@ -178,11 +176,11 @@ export class NewsController {
   @Delete('news/:id')
   async deleteNews(@Param('id') id: string, @Res() res) {
     try {
-      const _id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:news');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
+      // const _id = res.req.headers.authorization;
+      // const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
+      // const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
+      // const auth0Token = await validateUser(idDecrypted, 'create:news');
+      // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const news = await this.newsService.delete(id);
       return res.status(200).json(news);
     } catch (error) {

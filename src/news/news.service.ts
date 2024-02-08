@@ -19,7 +19,9 @@ export class NewsService {
       const news_en = JSON.parse(en);
       const news_es = JSON.parse(es);
       const news = [news_en, news_es];
-      return await this.prisma.news.create({ data: { news_metadata: news } });
+      return await this.prisma.news.create({
+        data: { news_metadata: news, image: data.image },
+      });
     } catch (error) {
       throw new Error(error);
     }
