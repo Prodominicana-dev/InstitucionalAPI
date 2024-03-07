@@ -81,7 +81,7 @@ export class SectionService {
     try {
       const sections = await this.prismaService.section.findMany({
         orderBy: [{ status: 'desc' }, { priority: 'asc' }, { id: 'asc' }],
-        include: { documents: true, subsection: true },
+        include: { documents: true, subsection: {include: {documents: true}} },
       });
       const secDocuments = sections.filter((section) => {
         return (section.documents = section.documents.filter((document) => {
