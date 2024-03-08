@@ -51,14 +51,17 @@ export class FilesController {
     @Param('id') id: string,
     @Param('doc') docName: string,
     @Res({ passthrough: true }) res: Response,
-  ): StreamableFile {
+  ) {
     const imagePath = path.join(process.cwd(), `public/docs/${id}/${docName}`);
+    const file = fs.readFileSync(imagePath);
     const mimeType = mime.lookup(imagePath);
     if (!mimeType) {
       return undefined;
     }
-    res.set('Content-Type', mimeType);
-    const file = fs.createReadStream(imagePath);
-    return new StreamableFile(file);
+    const blob = new Blob([file], { type: mimeType });
+    
+    res.setHeader('Content-Type', mimeType);
+    res.attachment();
+    res.send(blob);
   }
 }

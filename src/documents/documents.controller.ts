@@ -69,7 +69,7 @@ export class DocumentsController {
       const auth0Token = await validateUser(idDecrypted, 'create:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       // Si no tiene files, significa que es una url
-      if (files.length === 0) {
+      if (!files) {
         console.log('no tiene files');
         const data = {
           date: body.date,

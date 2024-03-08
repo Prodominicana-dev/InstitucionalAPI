@@ -28,7 +28,7 @@ export class SectionController {
       const auth0Token = await validateUser(idDecrypted, 'create:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const section = await this.sectionService.create(body);
-      return res.status(201).json({ section });
+      return res.status(201).json( section );
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error });
@@ -45,7 +45,7 @@ export class SectionController {
       const auth0Token = await validateUser(idDecrypted, 'update:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const section = await this.sectionService.update(id, body);
-      return res.status(200).json({ section });
+      return res.status(200).json( section );
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error });
@@ -57,7 +57,7 @@ export class SectionController {
   async getById(@Param('id') id: string, @Res() res) {
     try {
       const section = await this.sectionService.getById(id);
-      return res.status(200).json({ section });
+      return res.status(200).json( section );
     } catch (error) {
       return res.status(404).json({ error });
     }
@@ -68,7 +68,7 @@ export class SectionController {
   async getAllSections(@Res() res) {
     try {
       const sections = await this.sectionService.getAllSections();
-      return res.status(200).json({ sections });
+      return res.status(200).json( sections );
     } catch (error) {
       return res.status(404).json({ error });
     }
@@ -79,7 +79,18 @@ export class SectionController {
   async getAllSectionsAdmin(@Res() res) {
     try {
       const sections = await this.sectionService.getAllSectionsAdmin();
-      return res.status(200).json({ sections });
+      return res.status(200).json( sections );
+    } catch (error) {
+      return res.status(404).json({ error });
+    }
+  }
+
+  // Get filters for transparency by sectionID
+  @Get('/filters/:id')
+  async getFilters(@Param('id') id: string, @Res() res) {
+    try {
+      const filters = await this.sectionService.filterByDate(id);
+      return res.status(200).json( filters );
     } catch (error) {
       return res.status(404).json({ error });
     }
@@ -95,7 +106,7 @@ export class SectionController {
       const auth0Token = await validateUser(idDecrypted, 'update:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const section = await this.sectionService.enable(id);
-      return res.status(200).json({ section });
+      return res.status(200).json(section );
     } catch (error) {
       return res.status(500).json({ error });
     }
@@ -111,7 +122,7 @@ export class SectionController {
       const auth0Token = await validateUser(idDecrypted, 'update:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const section = await this.sectionService.disable(id);
-      return res.status(200).json({ section });
+      return res.status(200).json( section );
     } catch (error) {
       return res.status(500).json({ error });
     }
@@ -127,7 +138,7 @@ export class SectionController {
       const auth0Token = await validateUser(idDecrypted, 'delete:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const section = await this.sectionService.deleteS(id);
-      return res.status(200).json({ section });
+      return res.status(200).json(section );
     } catch (error) {
       return res.status(500).json({ error });
     }

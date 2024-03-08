@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, Section } from '@prisma/client';
 import { DocumentsService } from 'src/documents/documents.service';
@@ -125,6 +125,45 @@ export class SectionService {
       console.log(error);
       throw error;
     }
+  }
+
+  // En base al ID, quiero extraer todos los años para hacer un filtro y los meses que estan registrados (documentos)
+  async filterByDate(id: string) {
+    const section = await this.getById(id);
+    if(!section){
+      throw new NotFoundException();
+    }
+    
+    if(section.type !== 'document')
+      return;
+    let filter = [];
+    section.documents.map((doc) => {
+      console.log(doc.date);
+      // Convertir doc.date a fecha
+      const date = new Date(doc.date);
+      // Identificar el año y el mes y agregarlo a un arreglo de años con meses la estructura seria: {year: 2021, months: [{month: 1, name: 'Enero'}, {month: 2, name: 'Febrero'}]}
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const monthName = date.toLocaleString('es-ES', { month: 'long' });
+      const indexYear = filter.findIndex((item) => item.year === year);
+      if (indexYear === -1) {
+        filter.push({ year, months: [{ month, name: monthName }] });
+      } else {
+        const indexMonth = filter[indexYear].months.findIndex(
+          (item) => item.month === month,
+        );
+        if (indexMonth === -1) {
+          filter[indexYear].months.push({ month, name: monthName });
+        }
+      }
+    
+    })
+    // Ordenar los años de mayor a menor y los meses de menor a mayor
+    filter.sort((a, b) => b.year - a.year);
+    filter.forEach((item) => {
+      item.months.sort((a, b) => a.month - b.month);
+    });
+    return filter
   }
 
   /* Activar una seccion */
