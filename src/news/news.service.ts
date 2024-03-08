@@ -9,12 +9,12 @@ export class NewsService {
   /* Crear noticia */
   async create(data: any): Promise<any> {
     try {
-      const { en, es } = data;
+      const { en, es, date } = data;
       const news_en = JSON.parse(en);
       const news_es = JSON.parse(es);
       const news = [news_en, news_es];
       return await this.prisma.news.create({
-        data: { metadata: news, image: data.image },
+        data: { metadata: news, image: data.image, date },
       });
     } catch (error) {
       throw new Error(error);
@@ -38,6 +38,7 @@ export class NewsService {
         image: data.image || oldNews.image,
         updated_At: new Date(),
         status: data.status || oldNews.status,
+        date: data.date || oldNews.date,
       };
 
       return await this.prisma.news.update({
@@ -99,6 +100,7 @@ export class NewsService {
           id: news.id,
           image: news.image,
           status: news.status,
+          date: news.date,
           ...filteredNews,
         }));
     } catch (error) {
@@ -122,6 +124,7 @@ export class NewsService {
             id: n.id,
             image: n.image,
             status: n.status,
+            date: n.date,
             ...filteredNews,
           }));
       });
@@ -153,6 +156,7 @@ export class NewsService {
         id: news.id,
         image: news.image,
         status: news.status,
+        date: news.date,
         es: es[0],
         en: en[0],
       };
