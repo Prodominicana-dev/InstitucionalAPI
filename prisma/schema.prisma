@@ -58,7 +58,7 @@ model Documents{
 model News{
   id String @id @default(uuid())
   image String?
-  news_metadata Json[]
+  metadata Json[]
   created_At DateTime? @default(now())
   updated_At DateTime? @default(now())
   status Boolean? @default(true)

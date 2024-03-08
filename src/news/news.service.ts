@@ -2,12 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { News, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
-interface News_Metadata {
-  language: string;
-  title: string;
-  description: string;
-}
-
 @Injectable()
 export class NewsService {
   constructor(private prisma: PrismaService) {}
@@ -20,7 +14,7 @@ export class NewsService {
       const news_es = JSON.parse(es);
       const news = [news_en, news_es];
       return await this.prisma.news.create({
-        data: { news_metadata: news, image: data.image },
+        data: { metadata: news, image: data.image },
       });
     } catch (error) {
       throw new Error(error);
@@ -40,7 +34,7 @@ export class NewsService {
         news = [news_en, news_es];
       }
       const newData: Prisma.NewsUpdateInput = {
-        news_metadata: news !== undefined ? news : oldNews.news_metadata,
+        metadata: news !== undefined ? news : oldNews.metadata,
         image: data.image || oldNews.image,
         updated_At: new Date(),
         status: data.status || oldNews.status,
@@ -98,8 +92,8 @@ export class NewsService {
       });
 
       if (!news) throw new Error('Noticia no encontrada');
-      // return la news_metadata que coincida con el idioma
-      return news.news_metadata
+      // return la metadata que coincida con el idioma
+      return news.metadata
         .filter((m: any) => m.language === lang)
         .map((filteredNews: any) => ({
           id: news.id,
@@ -122,7 +116,7 @@ export class NewsService {
       });
 
       return news.flatMap((n: News) => {
-        return n.news_metadata
+        return n.metadata
           .filter((m: any) => m.language === lang)
           .map((filteredNews: any) => ({
             id: n.id,
@@ -144,13 +138,13 @@ export class NewsService {
       });
 
       if (!news) throw new Error('Noticia no encontrada');
-      const es = news.news_metadata
+      const es = news.metadata
         .filter((m: any) => m.language === 'es')
         .flatMap((filteredNews: any) => ({
           ...filteredNews,
         }));
 
-      const en = news.news_metadata
+      const en = news.metadata
         .filter((m: any) => m.language === 'en')
         .flatMap((filteredNews: any) => ({
           ...filteredNews,
@@ -174,7 +168,7 @@ export class NewsService {
       const news = await this.prisma.news.findMany({});
 
       const es = news.flatMap((n: News) => {
-        return n.news_metadata
+        return n.metadata
           .filter((m: any) => m.language === 'es')
           .map((filteredNews: any) => ({
             category: filteredNews.category,
@@ -182,7 +176,7 @@ export class NewsService {
       });
 
       const en = news.flatMap((n: News) => {
-        return n.news_metadata
+        return n.metadata
           .filter((m: any) => m.language === 'en')
           .map((filteredNews: any) => ({
             category: filteredNews.category,
