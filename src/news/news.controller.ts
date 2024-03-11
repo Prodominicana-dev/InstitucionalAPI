@@ -171,6 +171,16 @@ export class NewsController {
       return res.status(404).json({ error });
     }
   }
+  // Obtener prev y next por id de la noticia actual
+  @Get(':lang/news/prnxt/:id')
+  async getPrevNextNews(@Param('id') id: string, @Param('lang') lang: string) {
+    try {
+      const news = await this.newsService.getPrevNextNews(id, lang);
+      return news;
+    } catch (error) {
+      return { error };
+    }
+  }
 
   /* Borrar una noticia */
   @Delete('news/:id')

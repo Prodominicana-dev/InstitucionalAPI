@@ -113,7 +113,7 @@ export class NewsService {
     try {
       const news = await this.prisma.news.findMany({
         orderBy: {
-          created_At: 'desc',
+          date: 'desc',
         },
       });
 
@@ -131,6 +131,24 @@ export class NewsService {
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  // Obtener los id y title de noticia previa y la siguiente a la noticia actual
+  async getPrevNextNews(id: string, lang: string): Promise<any> {
+    const news = await this.findAll(lang);
+    const index = news.findIndex((n: any) => n.id === id);
+    const prev = news[index + 1] || null;
+    const next = news[index - 1] || null;
+    return {
+      prev: {
+        id: prev ? prev.id : null,
+        title: prev ? prev.title : null,
+      },
+      next: {
+        id: next ? next.id : null,
+        title: next ? next.title : null,
+      },
+    };
   }
 
   // Obtener noticia por id, pero sin lenguaje. retornar un es: con la data en español y en: con la data en ingles
