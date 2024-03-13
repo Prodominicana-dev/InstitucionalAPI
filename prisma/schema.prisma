@@ -93,16 +93,20 @@ model Gallery{
 model Member{
   id String @id @default(uuid())
   name String
-  role String?
-  regulation String?
-  functions String[]
+  // role String?
+  // regulation String?
+  // functions String[]
+  metadata Json[]
   image String?
   departmentId String?
   department Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  created_At DateTime? @default(now())
 }
 
 model Department{
   id String @id @default(uuid())
-  name String @unique
+  nameEs String @unique
+  nameEn String @unique
   structureOrganizational Member[]
+  created_At DateTime? @default(now())
 }

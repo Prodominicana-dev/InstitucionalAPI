@@ -59,12 +59,21 @@ export class StructureOrganizationalService {
   }
 
   // Obtener todos los miembros de un departamento, con el departamento
-  async getMembers(): Promise<Member[]> {
+  async getMembers(lang: string): Promise<any[]> {
     try {
-      return await this.prisma.member.findMany({
-        include: {
-          department: true,
-        },
+      const member = await this.prisma.member.findMany({
+        include: { department: true },
+      });
+      return member.flatMap((n: any) => {
+        return n.metadata
+          .filter((m: any) => m.language === lang)
+          .map((filteredNews: any) => ({
+            id: n.id,
+            name: n.name,
+            image: n.image,
+            department: n.department,
+            ...filteredNews,
+          }));
       });
     } catch (error) {
       throw new InternalServerErrorException(error);
@@ -72,11 +81,34 @@ export class StructureOrganizationalService {
   }
 
   // Obtener miembro por id
-  async getMemberById(id: string): Promise<Member> {
+  async getMemberById(id: string): Promise<any> {
     try {
-      return await this.prisma.member.findUnique({
+      const member = await this.prisma.member.findUnique({
         where: { id },
+        include: { department: true },
       });
+      if (!member) throw new NotFoundException('Noticia no encontrada');
+      const es = member.metadata
+        .filter((m: any) => m.language === 'es')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+
+      const en = member.metadata
+        .filter((m: any) => m.language === 'en')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+      const data = {
+        id: member.id,
+        image: member.image,
+        name: member.name,
+        department: member.department,
+        departmentId: member.departmentId,
+        es: es[0],
+        en: en[0],
+      };
+      return data;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -85,8 +117,17 @@ export class StructureOrganizationalService {
   // Crear un miembro
   async createMember(data: any): Promise<Member> {
     try {
+      const { es, en } = data;
+      const esData = JSON.parse(es);
+      const enData = JSON.parse(en);
+      const metadata = [esData, enData];
       return await this.prisma.member.create({
-        data,
+        data: {
+          name: data.name,
+          metadata,
+          departmentId: data.departmentId,
+          image: data.image,
+        },
       });
     } catch (error) {
       console.log(error);
@@ -101,9 +142,19 @@ export class StructureOrganizationalService {
         where: { id },
       });
       if (!member) throw new NotFoundException('Miembro no encontrado');
+      const { es, en } = data;
+      const esData = JSON.parse(es);
+      const enData = JSON.parse(en);
+      const metadata = [esData, enData];
+      const newData = {
+        name: data.name || member.name,
+        metadata,
+        departmentId: data.departmentId || member.departmentId,
+        image: data.image || member.image,
+      };
       return await this.prisma.member.update({
         where: { id },
-        data,
+        data: newData,
       });
     } catch (error) {
       throw new InternalServerErrorException(error);

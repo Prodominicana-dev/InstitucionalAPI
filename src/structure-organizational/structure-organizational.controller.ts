@@ -82,18 +82,16 @@ export class StructureOrganizationalController {
 
   /* Crear un miembro */
   @Post('member')
-  @UseInterceptors(FilesInterceptor('image'))
-  async createMember(@Body() body: any, @Res() res, @UploadedFiles() image?) {
+  @UseInterceptors(FilesInterceptor('images'))
+  async createMember(@Body() body: any, @Res() res, @UploadedFiles() images?) {
     try {
-      // Convertir de string a string[]
-      body.functions = body.functions.split(',');
-
+      console.log(body);
       const member =
         await this.structureOrganizationalService.createMember(body);
 
-      if (image === undefined) return res.status(201).json(member);
+      if (images === undefined) return res.status(201).json(member);
       /* Guardar archivos */
-      await image.forEach(async (file) => {
+      await images.forEach(async (file) => {
         const pathFolder = path.join(
           process.cwd(),
           `/public/member/${member.id}`,
@@ -113,19 +111,19 @@ export class StructureOrganizationalController {
 
   /* Editar un miembro */
   @Patch('member/:id')
-  @UseInterceptors(FilesInterceptor('image'))
+  @UseInterceptors(FilesInterceptor('images'))
   async updateMember(
     @Param('id') id: string,
     @Body() body: any,
     @Res() res,
-    @UploadedFiles() image?,
+    @UploadedFiles() images?,
   ) {
     try {
       const member = await this.structureOrganizationalService.updateMember(
         id,
         body,
       );
-      if (image === undefined || image.length === 0) {
+      if (images === undefined || images.length === 0) {
         return res.status(200).json(member);
       }
 
@@ -142,7 +140,7 @@ export class StructureOrganizationalController {
         fs.mkdirSync(pathFolder, { recursive: true });
       }
       /* Guardar archivos */
-      await image.forEach(async (file) => {
+      await images.forEach(async (file) => {
         const fileName = file.originalname;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
         member.image = `${fileName}`;
@@ -154,10 +152,12 @@ export class StructureOrganizationalController {
   }
 
   /* Obtener todos los miembros */
-  @Get('member')
-  async getMembers(@Res() res) {
+  @Get(':lang/member')
+  async getMembers(@Param('lang') lang: string, @Res() res) {
     try {
-      const members = await this.structureOrganizationalService.getMembers();
+      // Construir el siguiente modelo de member para retornar: { name, direction, es, en, image}
+      const members =
+        await this.structureOrganizationalService.getMembers(lang);
       return res.status(200).json(members);
     } catch (error) {
       throw new Error(error);
