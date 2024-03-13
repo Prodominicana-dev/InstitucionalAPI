@@ -9,6 +9,7 @@ import { NewsModule } from './news/news.module';
 import { FilesModule } from './files/files.module';
 import { EventsModule } from './events/events.module';
 import { GalleryModule } from './gallery/gallery.module';
+import { StructureOrganizationalModule } from './structure-organizational/structure-organizational.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { GalleryModule } from './gallery/gallery.module';
     FilesModule,
     EventsModule,
     GalleryModule,
+    StructureOrganizationalModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

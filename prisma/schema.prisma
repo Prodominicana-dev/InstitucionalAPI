@@ -89,3 +89,20 @@ model Gallery{
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   eventId String
 }
+
+model Member{
+  id String @id @default(uuid())
+  name String
+  role String?
+  regulation String?
+  functions String[]
+  image String?
+  departmentId String?
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Department{
+  id String @id @default(uuid())
+  name String @unique
+  structureOrganizational Member[]
+}
