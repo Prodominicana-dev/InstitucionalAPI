@@ -14,7 +14,12 @@ export class NewsService {
       const news_es = JSON.parse(es);
       const news = [news_en, news_es];
       return await this.prisma.news.create({
-        data: { metadata: news, image: data.image, date },
+        data: {
+          metadata: news,
+          image: data.image,
+          date,
+          categoryId: data.categoryId,
+        },
       });
     } catch (error) {
       throw new Error(error);
@@ -33,12 +38,13 @@ export class NewsService {
         const news_es = JSON.parse(es);
         news = [news_en, news_es];
       }
-      const newData: Prisma.NewsUpdateInput = {
+      const newData = {
         metadata: news !== undefined ? news : oldNews.metadata,
         image: data.image || oldNews.image,
         updated_At: new Date(),
         status: data.status || oldNews.status,
         date: data.date || oldNews.date,
+        categoryId: data.categoryId || oldNews.categoryId,
       };
 
       return await this.prisma.news.update({
@@ -115,9 +121,12 @@ export class NewsService {
         orderBy: {
           date: 'desc',
         },
+        include: {
+          category: true,
+        },
       });
 
-      return news.flatMap((n: News) => {
+      return news.flatMap((n: any) => {
         return n.metadata
           .filter((m: any) => m.language === lang)
           .map((filteredNews: any) => ({
@@ -125,6 +134,7 @@ export class NewsService {
             image: n.image,
             status: n.status,
             date: n.date,
+            category: n.category,
             ...filteredNews,
           }));
       });
