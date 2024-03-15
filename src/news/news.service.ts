@@ -9,15 +9,18 @@ export class NewsService {
   /* Crear noticia */
   async create(data: any): Promise<any> {
     try {
-      const { en, es, date } = data;
+      const { en, es, date, images } = data;
       const news_en = JSON.parse(en);
       const news_es = JSON.parse(es);
+      const imagesr = JSON.parse(images);
       const news = [news_en, news_es];
       return await this.prisma.news.create({
         data: {
           metadata: news,
-          image: data.image,
+          cover: data.cover,
+          images: imagesr,
           date,
+          created_By: data.created_By,
           categoryId: data.categoryId,
         },
       });
@@ -31,16 +34,19 @@ export class NewsService {
     try {
       const oldNews = await this.prisma.news.findUnique({ where: { id } });
       if (!oldNews) throw new Error('Noticia no encontrada');
-      const { en, es } = data;
+      const { en, es, images } = data;
       let news = undefined;
       if (en !== undefined && es !== undefined) {
         const news_en = JSON.parse(en);
         const news_es = JSON.parse(es);
         news = [news_en, news_es];
       }
+      const imagesr = JSON.parse(images);
       const newData = {
         metadata: news !== undefined ? news : oldNews.metadata,
-        image: data.image || oldNews.image,
+        cover: data.cover || oldNews.cover,
+        images: imagesr,
+        updated_By: data.updated_By,
         updated_At: new Date(),
         status: data.status || oldNews.status,
         date: data.date || oldNews.date,
@@ -96,6 +102,7 @@ export class NewsService {
     try {
       const news = await this.prisma.news.findUnique({
         where: { id },
+        include: { category: true },
       });
 
       if (!news) throw new Error('Noticia no encontrada');
@@ -104,9 +111,10 @@ export class NewsService {
         .filter((m: any) => m.language === lang)
         .map((filteredNews: any) => ({
           id: news.id,
-          image: news.image,
+          cover: news.cover,
           status: news.status,
           date: news.date,
+          category: news.category,
           ...filteredNews,
         }));
     } catch (error) {
@@ -131,9 +139,10 @@ export class NewsService {
           .filter((m: any) => m.language === lang)
           .map((filteredNews: any) => ({
             id: n.id,
-            image: n.image,
+            cover: n.cover,
             status: n.status,
             date: n.date,
+            images: n.images,
             category: n.category,
             ...filteredNews,
           }));
@@ -166,6 +175,7 @@ export class NewsService {
     try {
       const news = await this.prisma.news.findUnique({
         where: { id },
+        include: { category: true },
       });
 
       if (!news) throw new Error('Noticia no encontrada');
@@ -182,9 +192,11 @@ export class NewsService {
         }));
       const data = {
         id: news.id,
-        image: news.image,
+        cover: news.cover,
         status: news.status,
         date: news.date,
+        images: news.images,
+        category: news.category,
         es: es[0],
         en: en[0],
       };

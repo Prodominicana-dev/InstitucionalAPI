@@ -44,7 +44,6 @@ export class NewsController {
       console.log(news);
       if (files === undefined) return res.status(201).json(news);
       /* Guardar archivos */
-
       console.log(files);
       await files.forEach(async (file) => {
         const pathFolder = path.join(process.cwd(), `/public/news/${news.id}`);
@@ -54,7 +53,6 @@ export class NewsController {
         const fileName = file.originalname;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
       });
-
       return res.status(201).json(news);
     } catch (error) {
       console.log(error);
