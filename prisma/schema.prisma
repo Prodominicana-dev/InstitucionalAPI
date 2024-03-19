@@ -88,7 +88,9 @@ model Event{
   image String?
   start_Date DateTime?
   end_Date DateTime?
-  formLink String?
+  lat String? // Latitude
+  lng String? // Longitude
+  address String?
   created_At DateTime? @default(now())
   updated_At DateTime? @default(now())
   status Boolean? @default(true)

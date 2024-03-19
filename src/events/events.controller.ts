@@ -139,12 +139,12 @@ export class EventsController {
 
   /* Deshabilitar un evento */
   @Patch('events/disable/:id')
-  async disableEvent(@Param('id') id: string, @Res() res) {
+  async disableEvent(@Param('id') id: string, @Body() data, @Res() res) {
     try {
       // const id = res.req.headers.authorization;
       // const auth0Token = await validateUser(id, 'disable:event');
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      const event = await this.eventsService.disable(id);
+      const event = await this.eventsService.disable(id, data);
       return res.status(200).json(event);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -153,12 +153,14 @@ export class EventsController {
 
   /* Habilitar un evento */
   @Patch('events/enable/:id')
-  async enableEvent(@Param('id') id: string, @Res() res) {
+  async enableEvent(@Param('id') id: string, @Body() data, @Res() res) {
     try {
       // const id = res.req.headers.authorization;
       // const auth0Token = await validateUser(id, 'enable:event');
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      const event = await this.eventsService.enable(id);
+      console.log(data);
+      const event = await this.eventsService.enable(id, data);
+
       return res.status(200).json(event);
     } catch (error) {
       return res.status(500).json({ error: error.message });
