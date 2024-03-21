@@ -8,6 +8,9 @@ import { DocumentsModule } from './documents/documents.module';
 import { NewsModule } from './news/news.module';
 import { FilesModule } from './files/files.module';
 import { EventsModule } from './events/events.module';
+import { GalleryModule } from './gallery/gallery.module';
+import { StructureOrganizationalModule } from './structure-organizational/structure-organizational.module';
+import { NewsCategoryModule } from './news-category/news-category.module';
 
 @Module({
   imports: [
@@ -17,6 +20,9 @@ import { EventsModule } from './events/events.module';
     NewsModule,
     FilesModule,
     EventsModule,
+    GalleryModule,
+    StructureOrganizationalModule,
+    NewsCategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

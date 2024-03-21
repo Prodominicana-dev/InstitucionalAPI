@@ -9,6 +9,7 @@ import {
   Res,
   UseInterceptors,
   UploadedFiles,
+  StreamableFile,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -61,42 +62,65 @@ export class EventsController {
   }
 
   /* Editar un evento */
-  @Patch('events')
+  @Patch('events/:id')
   @UseInterceptors(FilesInterceptor('files'))
-  async updateEvent(@Body() body: any, @Res() res, @UploadedFiles() files?) {
+  async updateEvent(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Res() res,
+    @UploadedFiles() files?,
+  ) {
     try {
       // const id = res.req.headers.authorization;
       // const auth0Token = await validateUser(id, 'update:event');
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      const { data } = body;
-      data.forEach(async (element) => {
-        const event = await this.eventsService.update(element.id, element);
-        if (files === undefined) {
-          return res.status(200).json(event);
-        }
 
-        // Crear ruta del evento
-        const pathFolder = path.join(
-          process.cwd(),
-          `/public/events/${event.id}`,
-        );
-        await rimraf(pathFolder);
-        if (!fs.existsSync(pathFolder)) {
-          fs.mkdirSync(pathFolder, { recursive: true });
-        }
+      const event = await this.eventsService.update(id, body);
+      if (files === undefined) {
+        return res.status(200).json(event);
+      }
 
-        // Guardar archivos
-        await files.forEach(async (file) => {
-          const fileName = file.originalname;
-          await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-          event.event_en.image = `public/events/${event.id}/${fileName}`;
-          await this.eventsService.update(event.id, event);
-        });
+      // Crear ruta del evento
+      const pathFolder = path.join(process.cwd(), `/public/events/${event.id}`);
+      await rimraf(pathFolder);
+      if (!fs.existsSync(pathFolder)) {
+        fs.mkdirSync(pathFolder, { recursive: true });
+      }
+
+      // Guardar archivos
+      await files.forEach(async (file) => {
+        const fileName = file.originalname;
+        await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
+        event.event_en.image = `public/events/${event.id}/${fileName}`;
+        await this.eventsService.update(event.id, event);
       });
+
       return res.status(200).json({ message: 'Eventos actualizados' });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
+  }
+
+  @Get('/events/images/:id/:name')
+  getImages(
+    @Param('id') id: string,
+    @Param('name') imageName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    res.set({ 'Content-Type': 'image/jpeg' });
+    const imagePath = path.join(
+      process.cwd(),
+      `public/events/${id}`,
+      imageName,
+    );
+    //   const mimeType = mime.lookup(imageName);
+    //   if (!mimeType) {
+    //     return undefined;
+    //   }
+    const fileStream = fs.createReadStream(imagePath);
+    const streamableFile = new StreamableFile(fileStream);
+    //   streamableFile.options.type = mimeType
+    return streamableFile;
   }
 
   /* Eliminar un evento */
@@ -115,12 +139,12 @@ export class EventsController {
 
   /* Deshabilitar un evento */
   @Patch('events/disable/:id')
-  async disableEvent(@Param('id') id: string, @Res() res) {
+  async disableEvent(@Param('id') id: string, @Body() data, @Res() res) {
     try {
       // const id = res.req.headers.authorization;
       // const auth0Token = await validateUser(id, 'disable:event');
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      const event = await this.eventsService.disable(id);
+      const event = await this.eventsService.disable(id, data);
       return res.status(200).json(event);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -129,12 +153,14 @@ export class EventsController {
 
   /* Habilitar un evento */
   @Patch('events/enable/:id')
-  async enableEvent(@Param('id') id: string, @Res() res) {
+  async enableEvent(@Param('id') id: string, @Body() data, @Res() res) {
     try {
       // const id = res.req.headers.authorization;
       // const auth0Token = await validateUser(id, 'enable:event');
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      const event = await this.eventsService.enable(id);
+      console.log(data);
+      const event = await this.eventsService.enable(id, data);
+
       return res.status(200).json(event);
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -146,7 +172,19 @@ export class EventsController {
   async getAllEvents(@Param('lang') lang: string, @Res() res) {
     try {
       const events = await this.eventsService.findAllEnable(lang);
-      return res.status(200).json({ events });
+      return res.status(200).json(events);
+    } catch (error) {
+      return res.status(404).json({ error });
+    }
+  }
+
+  // Obtener por id
+  @Get('events/:id')
+  async getOneNewsById(@Param('id') id: string, @Res() res) {
+    try {
+      const event = await this.eventsService.findOneById(id);
+      console.log(event);
+      return res.status(200).json(event);
     } catch (error) {
       return res.status(404).json({ error });
     }
@@ -161,7 +199,7 @@ export class EventsController {
   ) {
     try {
       const event = await this.eventsService.findOne(id, lang);
-      return res.status(200).json({ event });
+      return res.status(200).json(event);
     } catch (error) {
       return res.status(404).json({ error });
     }

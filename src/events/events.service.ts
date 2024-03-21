@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Event, Prisma } from '@prisma/client';
 
@@ -17,7 +17,10 @@ export class EventsService {
         start_Date: data.start_Date || null,
         end_Date: data.end_Date || null,
         status: data.status || true,
-        formLink: data.formLink || null,
+        lat: data.lat || null,
+        lng: data.lng || null,
+        address: data.address || null,
+        created_By: data.created_By || null,
         image: data.image || null,
         created_At: new Date(),
       };
@@ -32,7 +35,7 @@ export class EventsService {
   async update(id, data: any): Promise<any> {
     try {
       const oldEvent = await this.prisma.event.findUnique({ where: { id } });
-      if (!oldEvent) throw new Error('Evento no encontrado');
+      if (!oldEvent) throw new NotFoundException('Evento no encontrado');
       const { en, es } = data;
       let events = undefined;
       if (en !== undefined && es !== undefined) {
@@ -45,9 +48,9 @@ export class EventsService {
         start_Date: data.start_Date || oldEvent.start_Date,
         end_Date: data.end_Date || oldEvent.end_Date,
         status: data.status || oldEvent.status,
-        formLink: data.formLink || oldEvent.formLink,
         image: data.image || oldEvent.image,
         updated_At: new Date(),
+        updated_By: data.updated_By || oldEvent.updated_By,
       };
       return await this.prisma.event.update({
         where: { id },
@@ -67,26 +70,82 @@ export class EventsService {
   }
 
   // Deshabilitar evento
-  async disable(id: string): Promise<Event> {
+  async disable(id: string, data: any): Promise<Event> {
     return this.prisma.event.update({
       where: { id },
-      data: { status: false },
+      data: {
+        status: false,
+        updated_By: data.updated_By,
+        updated_At: new Date(),
+      },
     });
   }
 
   // Habilitar evento
-  async enable(id: string): Promise<Event> {
+  async enable(id: string, data: any): Promise<Event> {
     return this.prisma.event.update({
       where: { id },
-      data: { status: true },
+      data: {
+        status: true,
+        updated_By: data.updated_By,
+        updated_At: new Date(),
+      },
     });
+  }
+
+  // Obtener evento por id, pero sin lenguaje. retornar un es: con la data en español y en: con la data en ingles
+  async findOneById(id: string): Promise<any> {
+    try {
+      const event = await this.prisma.event.findUnique({
+        where: { id },
+      });
+
+      if (!event) throw new NotFoundException('Noticia no encontrada');
+      const es = event.metadata
+        .filter((m: any) => m.language === 'es')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+
+      const en = event.metadata
+        .filter((m: any) => m.language === 'en')
+        .flatMap((filteredNews: any) => ({
+          ...filteredNews,
+        }));
+      const data = {
+        id: event.id,
+        image: event.image,
+        status: event.status,
+        start_Date: event.start_Date,
+        end_Date: event.end_Date,
+        address: event.address,
+        lat: event.lat,
+        lng: event.lng,
+
+        es: es[0],
+        en: en[0],
+      };
+      return data;
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   // Obtener todos los eventos por idioma
   async findAllEnable(lang: string): Promise<Event[]> {
-    return this.prisma.event.findMany({
-      where: { status: true },
+    const events = await this.prisma.event.findMany({
       orderBy: { start_Date: 'desc' },
+    });
+
+    return events.flatMap((e: Event) => {
+      return e.metadata
+        .filter((m: any) => m.language === lang)
+        .map((filteredEvent: any) => ({
+          id: e.id,
+          image: e.image,
+          status: e.status,
+          ...filteredEvent,
+        }));
     });
   }
 
@@ -95,7 +154,7 @@ export class EventsService {
     const event = await this.prisma.event.findUnique({
       where: { id },
     });
-    if (!event) throw new Error('Evento no encontrado');
+    if (!event) throw new NotFoundException('Evento no encontrado');
     return event.metadata
       .filter((e: any) => e.language === lang)
       .map((eventData: any) => ({

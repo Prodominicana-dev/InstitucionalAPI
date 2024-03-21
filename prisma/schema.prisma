@@ -10,7 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // Transparencia 
 
 model Section{
@@ -58,11 +57,29 @@ model Documents{
 
 model News{
   id String @id @default(uuid())
-  image String?
-  news_metadata Json[]
+  cover String?
+  images String[]
+  metadata Json[]
+  date DateTime? @default(now())
   created_At DateTime? @default(now())
   updated_At DateTime? @default(now())
   status Boolean? @default(true)
+  category NewsCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoryId String
+  created_By String?
+  updated_By String?
+}
+
+model NewsCategory{
+  id String @id @default(uuid())
+  nameEs String @unique
+  nameEn String @unique
+  news News[]
+  created_At DateTime? @default(now())
+  updated_At DateTime? @default(now())
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
 }
 
 model Event{
@@ -71,11 +88,15 @@ model Event{
   image String?
   start_Date DateTime?
   end_Date DateTime?
-  formLink String?
+  lat String? // Latitude
+  lng String? // Longitude
+  address String?
   created_At DateTime? @default(now())
   updated_At DateTime? @default(now())
   status Boolean? @default(true)
   Gallery Gallery[]
+  created_By String?
+  updated_By String?
 }
 
 model Gallery{
@@ -88,4 +109,25 @@ model Gallery{
   updated_At DateTime? @default(now())
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   eventId String
+}
+
+model Member{
+  id String @id @default(uuid())
+  name String
+  // role String?
+  // regulation String?
+  // functions String[]
+  metadata Json[]
+  image String?
+  departmentId String?
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  created_At DateTime? @default(now())
+}
+
+model Department{
+  id String @id @default(uuid())
+  nameEs String @unique
+  nameEn String @unique
+  structureOrganizational Member[]
+  created_At DateTime? @default(now())
 }

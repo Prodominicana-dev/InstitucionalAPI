@@ -94,15 +94,16 @@ export class SubsectionController {
   @Get(':id')
   async getById(@Param('id') id: string, @Res() res) {
     try {
-      const _id = res.req.headers.authorization;
+      // const _id = res.req.headers.authorization;
       console.log(id);
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      console.log(idDecrypted);
-      const auth0Token = await validateUser(idDecrypted, 'read:transparency');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
+      // const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
+      // const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
+      // console.log(idDecrypted);
+      // const auth0Token = await validateUser(idDecrypted, 'read:transparency');
+      // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const subsection = await this.subsectionService.getById(id);
-      return res.status(200).json({ subsection });
+      console.log(subsection)
+      return res.status(200).json(subsection);
     } catch (error) {
       return res.status(404).json({ error });
     }
@@ -126,6 +127,17 @@ export class SubsectionController {
       const subsections =
         await this.subsectionService.getBySectionId(sectionId);
       return res.status(200).json({ subsections });
+    } catch (error) {
+      return res.status(404).json({ error });
+    }
+  }
+
+  // Get filters for transparency by sectionID
+  @Get('/filters/:id')
+  async getFilters(@Param('id') id: string, @Res() res) {
+    try {
+      const filters = await this.subsectionService.filterByDate(id);
+      return res.status(200).json( filters );
     } catch (error) {
       return res.status(404).json({ error });
     }
