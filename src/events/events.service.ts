@@ -143,6 +143,11 @@ export class EventsService {
         .map((filteredEvent: any) => ({
           id: e.id,
           image: e.image,
+          address: e.address,
+          latitude: e.lat,
+          longitude: e.lng,
+          start_Date: e.start_Date,
+          end_Date: e.end_Date,
           status: e.status,
           ...filteredEvent,
         }));
@@ -159,6 +164,13 @@ export class EventsService {
       .filter((e: any) => e.language === lang)
       .map((eventData: any) => ({
         id: event.id,
+        image: event.image,
+        address: event.address,
+        latitude: event.lat,
+        longitude: event.lng,
+        start_Date: event.start_Date,
+        end_Date: event.end_Date,
+        status: event.status,
         ...eventData,
       }));
   }

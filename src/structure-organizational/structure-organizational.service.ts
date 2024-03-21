@@ -114,6 +114,29 @@ export class StructureOrganizationalService {
     }
   }
 
+  // Obtener todos los miembros de un departamento
+  async getMembersByDirection(id: string, lang: string): Promise<any[]> {
+    try {
+      const member = await this.prisma.member.findMany({
+        where: { departmentId: id },
+        include: { department: true },
+      });
+      return member.flatMap((n: any) => {
+        return n.metadata
+          .filter((m: any) => m.language === lang)
+          .map((filteredNews: any) => ({
+            id: n.id,
+            name: n.name,
+            image: n.image,
+            department: n.department,
+            ...filteredNews,
+          }));
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   // Crear un miembro
   async createMember(data: any): Promise<Member> {
     try {

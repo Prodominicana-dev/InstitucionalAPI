@@ -62,7 +62,7 @@ model News{
   metadata Json[]
   date DateTime? @default(now())
   created_At DateTime? @default(now())
-  updated_At DateTime? @default(now())
+  updated_At DateTime?
   status Boolean? @default(true)
   category NewsCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   categoryId String
@@ -76,7 +76,7 @@ model NewsCategory{
   nameEn String @unique
   news News[]
   created_At DateTime? @default(now())
-  updated_At DateTime? @default(now())
+  updated_At DateTime? 
   status Boolean? @default(true)
   created_By String?
   updated_By String?
@@ -92,31 +92,40 @@ model Event{
   lng String? // Longitude
   address String?
   created_At DateTime? @default(now())
-  updated_At DateTime? @default(now())
+  updated_At DateTime? 
   status Boolean? @default(true)
-  Gallery Gallery[]
   created_By String?
   updated_By String?
 }
 
 model Gallery{
   id String @id @default(uuid())
-  name String
-  size String?
-  type String?
-  path String?
+  title String
+  titleEn String
+  cover String?
   created_At DateTime? @default(now())
-  updated_At DateTime? @default(now())
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  eventId String
+  updated_At DateTime? 
+  created_By String?
+  updated_By String?
+  status Boolean? @default(true)
+  photo Photo[]
+}
+
+model Photo{
+  id String @id @default(uuid())
+  size String?
+  name String?
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  gallery Gallery? @relation(fields: [galleryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  galleryId String
+  created_By String?
+  updated_By String?
 }
 
 model Member{
   id String @id @default(uuid())
   name String
-  // role String?
-  // regulation String?
-  // functions String[]
   metadata Json[]
   image String?
   departmentId String?

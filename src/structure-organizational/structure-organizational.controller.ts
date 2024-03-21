@@ -164,6 +164,26 @@ export class StructureOrganizationalController {
     }
   }
 
+  /* Obtener todos los miembros de un departamento */
+  @Get(':lang/member/direction/:id')
+  async getMembersByDirection(
+    @Param('id') id: string,
+    @Param('lang') lang: string,
+    @Res() res,
+  ) {
+    try {
+      // Construir el siguiente modelo de member para retornar: { name, direction, es, en, image}
+      const members =
+        await this.structureOrganizationalService.getMembersByDirection(
+          id,
+          lang,
+        );
+      return res.status(200).json(members);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   /* Obtener miembro por id */
   @Get('member/:id')
   async getMemberById(@Param('id') id: string, @Res() res) {
