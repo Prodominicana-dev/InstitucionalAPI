@@ -49,7 +49,7 @@ export class EventsController {
         await files.forEach(async (file) => {
           const fileName = file.originalname;
           await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-          event.image = `public/events/${event.event_es.id}/${fileName}`;
+          event.image = `${fileName}`;
         });
 
         await this.eventsService.update(event.id, event);
@@ -91,7 +91,7 @@ export class EventsController {
       await files.forEach(async (file) => {
         const fileName = file.originalname;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        event.event_en.image = `public/events/${event.id}/${fileName}`;
+        event.image = `${fileName}`;
         await this.eventsService.update(event.id, event);
       });
 
