@@ -100,12 +100,9 @@ export class StructureOrganizationalController {
         }
         const fileName = `${new Date().getTime()}.${mime.extension(file.mimetype)}`;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        const a = await this.structureOrganizationalService.updateMember(
-          member.id,
-          {
-            image: fileName,
-          },
-        );
+        await this.structureOrganizationalService.updateMember(member.id, {
+          image: fileName,
+        });
       });
 
       return res.status(201).json({ message: 'Miembro creado con éxito' });
@@ -146,11 +143,14 @@ export class StructureOrganizationalController {
       }
       /* Guardar archivos */
       await images.forEach(async (file) => {
-        const fileName = file.originalname;
+        const fileName = `${new Date().getTime()}.${mime.extension(file.mimetype)}`;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
         member.image = `${fileName}`;
       });
-      return res.status(200).json(member);
+      await this.structureOrganizationalService.updateMember(member.id, {
+        image: member.image,
+      });
+      return res.status(200).json({ message: 'Miembro actualizado' });
     } catch (error) {
       throw new Error(error);
     }
