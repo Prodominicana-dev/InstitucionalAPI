@@ -141,17 +141,27 @@ export class StructureOrganizationalService {
   async createMember(data: any): Promise<Member> {
     try {
       const { es, en } = data;
-      const esData = JSON.parse(es);
-      const enData = JSON.parse(en);
-      const metadata = [esData, enData];
-      return await this.prisma.member.create({
-        data: {
-          name: data.name,
-          metadata,
-          departmentId: data.departmentId,
-          image: data.image,
-        },
-      });
+      if (!es || !en) {
+        return await this.prisma.member.create({
+          data: {
+            name: data.name,
+            departmentId: data.departmentId,
+            image: data.image,
+          },
+        });
+      } else {
+        const esData = JSON.parse(es);
+        const enData = JSON.parse(en);
+        const metadata = [esData, enData];
+        return await this.prisma.member.create({
+          data: {
+            name: data.name,
+            metadata: metadata || [],
+            departmentId: data.departmentId,
+            image: data.image,
+          },
+        });
+      }
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(error);
@@ -166,19 +176,30 @@ export class StructureOrganizationalService {
       });
       if (!member) throw new NotFoundException('Miembro no encontrado');
       const { es, en } = data;
-      const esData = JSON.parse(es);
-      const enData = JSON.parse(en);
-      const metadata = [esData, enData];
-      const newData = {
-        name: data.name || member.name,
-        metadata,
-        departmentId: data.departmentId || member.departmentId,
-        image: data.image || member.image,
-      };
-      return await this.prisma.member.update({
-        where: { id },
-        data: newData,
-      });
+      if (!es || !en) {
+        return await this.prisma.member.update({
+          where: { id },
+          data: {
+            name: data.name,
+            departmentId: data.departmentId,
+            image: data.image,
+          },
+        });
+      } else {
+        const esData = JSON.parse(es);
+        const enData = JSON.parse(en);
+        const metadata = [esData, enData];
+        const newData = {
+          name: data.name || member.name,
+          metadata,
+          departmentId: data.departmentId || member.departmentId,
+          image: data.image || member.image,
+        };
+        return await this.prisma.member.update({
+          where: { id },
+          data: newData,
+        });
+      }
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
