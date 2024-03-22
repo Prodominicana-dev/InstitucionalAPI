@@ -85,7 +85,6 @@ export class StructureOrganizationalController {
   @UseInterceptors(FilesInterceptor('images'))
   async createMember(@Body() body: any, @Res() res, @UploadedFiles() images?) {
     try {
-      console.log(body);
       const member =
         await this.structureOrganizationalService.createMember(body);
 
@@ -99,11 +98,17 @@ export class StructureOrganizationalController {
         if (!fs.existsSync(pathFolder)) {
           fs.mkdirSync(pathFolder, { recursive: true });
         }
-        const fileName = file.originalname;
+        const fileName = `${new Date().getTime()}.${mime.extension(file.mimetype)}`;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
+        const a = await this.structureOrganizationalService.updateMember(
+          member.id,
+          {
+            image: fileName,
+          },
+        );
       });
 
-      return res.status(201).json(member);
+      return res.status(201).json({ message: 'Miembro creado con éxito' });
     } catch (error) {
       throw new Error(error);
     }

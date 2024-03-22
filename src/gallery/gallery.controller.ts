@@ -9,6 +9,7 @@ import {
   Res,
   UseInterceptors,
   UploadedFiles,
+  StreamableFile,
 } from '@nestjs/common';
 import { GalleryService } from './gallery.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -21,6 +22,7 @@ import { PhotoDto } from './dto/photo.dto';
 
 const fs = require('fs');
 const path = require('path');
+const mime = require('mime-types');
 const CryptoJS = require('crypto-js');
 
 @Controller('apiv2/gallery')
@@ -31,7 +33,7 @@ export class GalleryController {
   // Crear una galería de imágenes
 
   @Post()
-  @UseInterceptors(FilesInterceptor('image'))
+  @UseInterceptors(FilesInterceptor('images'))
   async createGalleryImage(
     @Body() body: GalleryDto,
     @UploadedFiles() files,
@@ -45,7 +47,7 @@ export class GalleryController {
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const gallery = await this.galleryService.create(body);
       if (files) {
-        files.forEach(async (file) => {
+        files.forEach(async (file, index) => {
           const pathFolder = path.join(
             process.cwd(),
             `/public/gallery/${gallery.id}`,
@@ -53,8 +55,8 @@ export class GalleryController {
           if (!fs.existsSync(pathFolder)) {
             fs.mkdirSync(pathFolder, { recursive: true });
           }
-          const fileName = file.originalname;
-          if (fileName !== gallery.cover) {
+          const fileName = `${index}_${new Date().getTime()}.${mime.extension(file.mimetype)}`;
+          if (file.originalname !== gallery.cover) {
             const data: PhotoDto = {
               name: fileName,
               galleryId: gallery.id,
@@ -72,10 +74,13 @@ export class GalleryController {
               path.join(pathFolder, fileName),
               file.buffer,
             );
+            await this.galleryService.update(gallery.id, {
+              cover: fileName,
+            });
           }
         });
       }
-      return res.status(201).json(gallery);
+      return res.status(201).json({ message: 'Gallery created' });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });
@@ -84,7 +89,7 @@ export class GalleryController {
 
   // Editar una gallery
   @Patch(':id')
-  @UseInterceptors(FilesInterceptor('image'))
+  @UseInterceptors(FilesInterceptor('images'))
   async updateGalleryImage(
     @Param('id') id: string,
     @Body() body: GalleryUpdateDto,
@@ -99,32 +104,98 @@ export class GalleryController {
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const gallery = await this.galleryService.getById(id);
       if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+
       if (files) {
-        files.forEach(async (file) => {
+        files.forEach(async (file, index) => {
           const pathFolder = path.join(
             process.cwd(),
             `/public/gallery/${gallery.id}`,
           );
           if (!fs.existsSync(pathFolder)) {
-            fs.mkdirSync(pathFolder);
+            fs.mkdirSync(pathFolder, { recursive: true });
           }
-          // Delete old file (image)
           const files = fs.readdirSync(pathFolder);
-          files.forEach((file) => {
-            if (file === gallery.cover) {
+          await files.forEach((file) => {
+            if (file === gallery.cover && gallery.cover !== body.cover) {
               fs.unlinkSync(path.join(pathFolder, file));
             }
           });
-          const fileName = file.originalname;
-          await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
+          const fileName = `${index}_${new Date().getTime()}.${mime.extension(file.mimetype)}`;
+          if (
+            file.originalname !== gallery.cover &&
+            gallery.cover === body.cover
+          ) {
+            const data: PhotoDto = {
+              name: fileName,
+              galleryId: gallery.id,
+              size: file.size.toString(),
+              created_By: body.created_By,
+            };
+            const photo = await this.galleryService.createPhoto(data);
+            if (photo)
+              await fs.writeFileSync(
+                path.join(pathFolder, fileName),
+                file.buffer,
+              );
+          } else {
+            if (file.originalname !== body.cover) {
+              const data: PhotoDto = {
+                name: fileName,
+                galleryId: gallery.id,
+                size: file.size.toString(),
+                created_By: body.created_By,
+              };
+              const photo = await this.galleryService.createPhoto(data);
+              if (photo)
+                await fs.writeFileSync(
+                  path.join(pathFolder, fileName),
+                  file.buffer,
+                );
+            } else {
+              await fs.writeFileSync(
+                path.join(pathFolder, fileName),
+                file.buffer,
+              );
+              await this.galleryService.update(gallery.id, {
+                cover: fileName,
+              });
+            }
+          }
         });
       }
-      const updatedGallery = await this.galleryService.update(id, body);
+      const updatedGallery = await this.galleryService.update(id, {
+        updated_By: body.updated_By,
+        updated_At: new Date(),
+        title: body.title,
+        titleEn: body.titleEn,
+      });
       return res.status(200).json(updatedGallery);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });
     }
+  }
+
+  @Get(':id/img/:name')
+  getImages(
+    @Param('id') id: string,
+    @Param('name') imageName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    const imagePath = path.join(
+      process.cwd(),
+      `public/gallery/${id}`,
+      imageName,
+    );
+    // const mimeType = mime.lookup(imageName);
+    // if (!mimeType) {
+    //   return undefined;
+    // }
+
+    const fileStream = fs.createReadStream(imagePath);
+    const streamableFile = new StreamableFile(fileStream);
+    //   streamableFile.options.type = mimeType
+    return streamableFile;
   }
 
   // Activar una galería
