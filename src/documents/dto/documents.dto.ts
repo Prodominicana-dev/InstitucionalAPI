@@ -3,5 +3,6 @@ export class DocumentSectionSubsectionDto {
   subsectionId: string;
   date?: Date;
   name?: string;
+  title?: string;
   url?: string;
 }

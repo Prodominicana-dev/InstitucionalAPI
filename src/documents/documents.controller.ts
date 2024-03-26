@@ -16,11 +16,11 @@ import { DocumentsService } from './documents.service';
 import { DocumentSectionSubsectionDto } from './dto/documents.dto';
 import { validateUser } from 'src/validation/validation';
 import { Response } from 'express';
-import mime from 'mime-types';
-import { Multer } from 'multer';
+
 const CryptoJS = require('crypto-js');
 const fs = require('fs');
 const path = require('path');
+const mime = require('mime-types');
 
 @Controller('apiv2/documents')
 export class DocumentsController {
@@ -57,12 +57,11 @@ export class DocumentsController {
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
   async create(
-    @UploadedFiles() files: Array<Express.Multer.File>,
+    @UploadedFiles() files,
     @Body() body: DocumentSectionSubsectionDto,
     @Res() res,
   ) {
     try {
-      console.log(body);
       const _id = res.req.headers.authorization;
       const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
@@ -75,13 +74,14 @@ export class DocumentsController {
           date: body.date,
           name: body.name,
           url: body.url,
+          title: body.title,
           sectionId: body.sectionId,
           subsectionId: body.subsectionId ? body.subsectionId : null,
         };
         console.log(data);
         const document = await this.documentsService.create(data);
         console.log(document);
-        return res.status(201).json({ document });
+        return res.status(201).json(document);
       }
       /* Crear la carpeta del documento */
       const pathFolder = path.join(
@@ -95,13 +95,16 @@ export class DocumentsController {
         fs.mkdirSync(pathFolder, { recursive: true });
       }
 
-      files.forEach(async (file) => {
-        const fileName = file.originalname;
+      await files?.forEach(async (file: any, index: number) => {
+        console.log(file);
+        const fileName = `${index}${new Date().getTime()}.${mime.extension(file.mimetype)}`;
+        console.log(fileName);
         const size = file.size;
         const data = {
           date: body.date,
           name: fileName,
           size: size.toString(),
+          title: body.title,
           path: body.subsectionId
             ? `docs/${body.sectionId}/${body.subsectionId}/${fileName}`
             : `docs/${body.sectionId}/${fileName}`,
@@ -125,7 +128,7 @@ export class DocumentsController {
   @UseInterceptors(FilesInterceptor('files'))
   async update(
     @Param('id') id: string,
-    @UploadedFiles() files: Array<Express.Multer.File>,
+    @UploadedFiles() files,
     @Body() body: DocumentSectionSubsectionDto,
     @Res() res,
   ) {
@@ -142,10 +145,11 @@ export class DocumentsController {
         const doc = await this.documentsService.getById(id);
         const pathFolder = path.join(process.cwd(), `public/${doc.path}`);
         if (fs.existsSync(pathFolder)) await fs.unlinkSync(pathFolder);
-        const fileName = files[0].originalname;
+        const fileName = `${new Date().getTime()}.${mime.extension(files[0].mimetype)}`;
         const size = files[0].size;
         const data = {
           date: body.date,
+          title: body.title,
           name: fileName,
           size: size.toString(),
           path: body.subsectionId
@@ -157,10 +161,10 @@ export class DocumentsController {
         const documentPath = path.join(process.cwd(), `public/${data.path}`);
         await fs.writeFileSync(documentPath, files[0].buffer);
         const document = await this.documentsService.update(id, data);
-        return res.status(200).json({ document });
+        return res.status(200).json(document);
       }
       const document = await this.documentsService.update(id, body);
-      return res.status(200).json({ document });
+      return res.status(200).json(document);
     } catch (error) {
       return res.status(500).json({ error });
     }

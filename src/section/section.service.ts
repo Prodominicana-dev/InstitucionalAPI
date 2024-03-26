@@ -80,8 +80,11 @@ export class SectionService {
   async getAllSections(): Promise<any[]> {
     try {
       const sections = await this.prismaService.section.findMany({
-        orderBy: [{ status: 'desc' }, { priority: 'asc' }, { id: 'asc' }],
-        include: { documents: true, subsection: {include: {documents: true}} },
+        orderBy: [{ status: 'desc' }, { priority: 'asc' }],
+        include: {
+          documents: true,
+          subsection: { include: { documents: true } },
+        },
       });
       const secDocuments = sections.filter((section) => {
         return (section.documents = section.documents.filter((document) => {
@@ -112,7 +115,7 @@ export class SectionService {
   async getAllSectionsAdmin(): Promise<Section[]> {
     try {
       const sections = await this.prismaService.section.findMany({
-        orderBy: [{ status: 'asc' }, { priority: 'asc' }, { id: 'asc' }],
+        orderBy: [{ status: 'asc' }, { priority: 'asc' }],
         include: { documents: true, subsection: true },
       });
       const secDocuments = sections.filter((section) => {
@@ -130,12 +133,11 @@ export class SectionService {
   // En base al ID, quiero extraer todos los años para hacer un filtro y los meses que estan registrados (documentos)
   async filterByDate(id: string) {
     const section = await this.getById(id);
-    if(!section){
+    if (!section) {
       throw new NotFoundException();
     }
-    
-    if(section.type !== 'document')
-      return;
+
+    if (section.type !== 'document') return;
     let filter = [];
     section.documents.map((doc) => {
       console.log(doc.date);
@@ -156,14 +158,13 @@ export class SectionService {
           filter[indexYear].months.push({ month, name: monthName });
         }
       }
-    
-    })
+    });
     // Ordenar los años de mayor a menor y los meses de menor a mayor
     filter.sort((a, b) => b.year - a.year);
     filter.forEach((item) => {
       item.months.sort((a, b) => a.month - b.month);
     });
-    return filter
+    return filter;
   }
 
   /* Activar una seccion */

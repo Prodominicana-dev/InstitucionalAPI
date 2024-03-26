@@ -39,8 +39,8 @@ model Subsection{
 
 model Documents{
   id String @id @default(uuid())
-  name String
-  description String?
+  title String?
+  name String?
   path String?
   date DateTime? @default(now())
   size String?

@@ -135,12 +135,16 @@ export class GalleryService {
         where: {
           galleryId,
         },
+        include: { gallery: true },
       });
 
-      return photos.map((photo: Photo) => {
+      return photos.map((photo: any) => {
         return {
           id: photo.id,
+          galleryId: photo.galleryId,
           name: photo.name,
+          titleEs: photo.gallery.title,
+          titleEn: photo.gallery.titleEn,
         };
       });
     } catch (error) {
