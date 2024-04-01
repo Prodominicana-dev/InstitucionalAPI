@@ -96,6 +96,20 @@ model Event{
   status Boolean? @default(true)
   created_By String?
   updated_By String?
+  category EventCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  categoryId String?
+}
+
+model EventCategory{
+  id String @id @default(uuid())
+  name String 
+  email String
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
+  event Event[]
 }
 
 model Gallery{

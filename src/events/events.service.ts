@@ -12,7 +12,7 @@ export class EventsService {
       const event_en = JSON.parse(en);
       const event_es = JSON.parse(es);
       const events = [event_en, event_es];
-      const eventNew: Prisma.EventCreateInput = {
+      const eventNew = {
         metadata: events,
         start_Date: data.start_Date || null,
         end_Date: data.end_Date || null,
@@ -21,6 +21,7 @@ export class EventsService {
         lng: data.lng || null,
         address: data.address || null,
         created_By: data.created_By || null,
+        categoryId: data.categoryId,
         image: data.image || null,
         created_At: new Date(),
       };
@@ -43,12 +44,13 @@ export class EventsService {
         const event_es = JSON.parse(es);
         events = [event_en, event_es];
       }
-      const newData: Prisma.EventUpdateInput = {
+      const newData = {
         metadata: events !== undefined ? events : oldEvent.metadata,
         start_Date: data.start_Date || oldEvent.start_Date,
         end_Date: data.end_Date || oldEvent.end_Date,
         status: data.status || oldEvent.status,
         image: data.image || oldEvent.image,
+        categoryId: data.categoryId || oldEvent.categoryId,
         updated_At: new Date(),
         updated_By: data.updated_By || oldEvent.updated_By,
       };
@@ -119,6 +121,7 @@ export class EventsService {
         start_Date: event.start_Date,
         end_Date: event.end_Date,
         address: event.address,
+        categoryId: event.categoryId,
         lat: event.lat,
         lng: event.lng,
 
