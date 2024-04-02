@@ -154,3 +154,41 @@ model Department{
   structureOrganizational Member[]
   created_At DateTime? @default(now())
 }
+
+
+model Service{
+  id String @id @default(uuid())
+  metadata Json[]
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
+  category ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  categoryId String?
+  type ServiceType? @relation(fields: [typeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  typeId String?
+}
+
+model ServiceCategory{
+  id String @id @default(uuid())
+  name String
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
+  service Service[]
+}
+
+model ServiceType{
+  id String @id @default(uuid())
+  nameEs String
+  nameEn String
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
+  service Service[]
+}
