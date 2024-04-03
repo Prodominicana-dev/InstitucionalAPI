@@ -14,7 +14,7 @@ datasource db {
 
 model Section{
   id String @id @default(uuid())
-  name String
+  name String @unique
   type String? 
   description String?
   priority Int? @default(1)
@@ -26,7 +26,7 @@ model Section{
 
 model Subsection{
   id String @id @default(uuid())
-  name String
+  name String @unique
   type String? 
   description String?
   priority Int? @default(1)
@@ -114,8 +114,8 @@ model EventCategory{
 
 model Gallery{
   id String @id @default(uuid())
-  title String
-  titleEn String
+  title String @unique
+  titleEn String @unique
   cover String?
   created_At DateTime? @default(now())
   updated_At DateTime? 
@@ -153,4 +153,42 @@ model Department{
   nameEn String @unique
   structureOrganizational Member[]
   created_At DateTime? @default(now())
+}
+
+
+model Service{
+  id String @id @default(uuid())
+  metadata Json[]
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
+  category ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  categoryId String?
+  type ServiceType? @relation(fields: [typeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  typeId String?
+}
+
+model ServiceCategory{
+  id String @id @default(uuid())
+  name String
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
+  service Service[]
+}
+
+model ServiceType{
+  id String @id @default(uuid())
+  nameEs String
+  nameEn String
+  created_At DateTime? @default(now())
+  updated_At DateTime? 
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
+  service Service[]
 }
