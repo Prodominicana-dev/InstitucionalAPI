@@ -12,6 +12,7 @@ import { GalleryModule } from './gallery/gallery.module';
 import { StructureOrganizationalModule } from './structure-organizational/structure-organizational.module';
 import { NewsCategoryModule } from './news-category/news-category.module';
 import { EventCategoryModule } from './event-category/event-category.module';
+import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { EventCategoryModule } from './event-category/event-category.module';
     StructureOrganizationalModule,
     NewsCategoryModule,
     EventCategoryModule,
+    ServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
