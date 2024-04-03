@@ -250,6 +250,22 @@ export class GalleryController {
     }
   }
 
+  // Obtener una galería por idioma y nombre
+  @Get('/nm/:name')
+  async findGalleryImageByLanguage(
+    @Param('name') name: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const gallery = await this.galleryService.findByName(name);
+      if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+      return res.status(200).json(gallery);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   // Obtener una galería por id
   @Get(':id')
   async findOneGalleryImage(@Param('id') id: string, @Res() res: Response) {
@@ -333,6 +349,24 @@ export class GalleryController {
         });
       }
       return res.status(201).json({ message: 'Photos added' });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Obtener todas las fotos por nombre de la galeria e idioma
+  @Get('nm/:name/photo')
+  async findPhotosByName(
+    @Param('name') name: string,
+
+    @Res() res: Response,
+  ) {
+    try {
+      const gallery = await this.galleryService.findByName(name);
+      if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+      const photos = await this.galleryService.findAllPhotos(gallery.id);
+      return res.status(200).json(photos);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });

@@ -79,7 +79,32 @@ export class GalleryService {
   // Find all Gallery Images by EventID
   async findAll(): Promise<Gallery[]> {
     try {
-      return this.prismaService.gallery.findMany({});
+      return this.prismaService.gallery.findMany({ include: { photo: true } });
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  // Find Gallery by name and language
+  async findByName(name: string): Promise<Gallery> {
+    try {
+      const gallery = await this.prismaService.gallery.findFirst({
+        where: {
+          title: name,
+        },
+        include: { photo: true },
+      });
+      if (!gallery) {
+        return this.prismaService.gallery.findFirst({
+          where: {
+            titleEn: name,
+          },
+          include: { photo: true },
+        });
+      }
+
+      return gallery;
     } catch (error) {
       console.log(error);
       throw error;
@@ -147,6 +172,17 @@ export class GalleryService {
           titleEn: photo.gallery.titleEn,
         };
       });
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  // Obtener todas las fotos por nombre de la galeria e idioma
+  async findPhotosByName(name: string): Promise<any[]> {
+    try {
+      const gallery = await this.findByName(name);
+      return this.findAllPhotos(gallery.id);
     } catch (error) {
       console.log(error);
       throw error;
