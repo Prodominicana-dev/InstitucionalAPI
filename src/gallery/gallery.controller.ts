@@ -357,11 +357,7 @@ export class GalleryController {
 
   // Obtener todas las fotos por nombre de la galeria e idioma
   @Get('nm/:name/photo')
-  async findPhotosByName(
-    @Param('name') name: string,
-
-    @Res() res: Response,
-  ) {
+  async findPhotosByName(@Param('name') name: string, @Res() res: Response) {
     try {
       const gallery = await this.galleryService.findByName(name);
       if (!gallery) return res.status(404).json({ error: 'Gallery not found' });

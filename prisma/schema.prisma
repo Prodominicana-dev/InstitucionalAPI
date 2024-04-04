@@ -14,7 +14,7 @@ datasource db {
 
 model Section{
   id String @id @default(uuid())
-  name String @unique
+  name String
   type String? 
   description String?
   priority Int? @default(1)
@@ -26,7 +26,7 @@ model Section{
 
 model Subsection{
   id String @id @default(uuid())
-  name String @unique
+  name String
   type String? 
   description String?
   priority Int? @default(1)
