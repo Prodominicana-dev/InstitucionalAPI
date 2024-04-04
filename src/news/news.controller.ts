@@ -12,11 +12,11 @@ import {
   StreamableFile,
   Header,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { NewsService } from './news.service';
 import { validateUser } from 'src/validation/validation';
 import { NewsDto } from './dto/news.dto';
 import { Response } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { rimraf } from 'rimraf';
 const CryptoJS = require('crypto-js');
 

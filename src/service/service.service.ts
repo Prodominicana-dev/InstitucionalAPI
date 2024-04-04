@@ -129,8 +129,12 @@ export class ServiceService {
   // Crear
   async createService(data: any) {
     try {
+      // const { en, es } = data;
+      // const service = [en, es];
       const { en, es } = data;
-      const service = [en, es];
+      const serviceEn = JSON.parse(en);
+      const serviceEs = JSON.parse(es);
+      const service = [serviceEn, serviceEs];
       return await this.prismaService.service.create({
         data: {
           created_By: data.created_By,
@@ -148,17 +152,28 @@ export class ServiceService {
   // Editar
   async updateService(id: string, data: any) {
     try {
+      const oldService = await this.prismaService.service.findUnique({
+        where: { id },
+      });
+      if (!oldService) throw new Error('Noticia no encontrada');
       const { en, es } = data;
-      const service = [en, es];
+      let service = undefined;
+      if (en !== undefined && es !== undefined) {
+        const serviceEn = JSON.parse(en);
+        const serviceEs = JSON.parse(es);
+        service = [serviceEn, serviceEs];
+      }
+      const newData = {
+        metadata: service !== undefined ? service : oldService.metadata,
+        image: data.image || oldService.image,
+        updated_By: data.updated_By,
+        updated_At: new Date(),
+        status: data.status || oldService.status,
+        categoryId: data.categoryId || oldService.categoryId,
+      };
       return await this.prismaService.service.update({
         where: { id },
-        data: {
-          categoryId: data.categoryId,
-          typeId: data.typeId,
-          metadata: service,
-          updated_By: data.updated_By,
-          updated_At: new Date(),
-        },
+        data: newData,
       });
     } catch (error) {
       throw new Error(error);
@@ -199,6 +214,7 @@ export class ServiceService {
           id: service.id,
           categoryId: service.categoryId,
           typeId: service.typeId,
+          image: service.image,
           es: es[0],
           en: en[0],
           created_At: service.created_At,
@@ -234,6 +250,7 @@ export class ServiceService {
           id: service.id,
           categoryId: service.categoryId,
           typeId: service.typeId,
+          image: service.image,
           serviceByLanguage,
           created_At: service.created_At,
           updated_At: service.updated_At,
@@ -270,6 +287,7 @@ export class ServiceService {
         id: service.id,
         categoryId: service.categoryId,
         typeId: service.typeId,
+        image: service.image,
         es: es[0],
         en: en[0],
         created_At: service.created_At,
@@ -299,6 +317,7 @@ export class ServiceService {
         id: service.id,
         categoryId: service.categoryId,
         typeId: service.typeId,
+        image: service.image,
         service: serviceByLanguage,
         created_At: service.created_At,
         updated_At: service.updated_At,
@@ -306,6 +325,52 @@ export class ServiceService {
         typeEs: service.type.nameEs,
         typeEn: service.type.nameEn,
       };
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  // Obtener los servicios de la categoría: Inversion
+  async servicesByCategory(category: string) {
+    try {
+      const services = await this.prismaService.service.findMany({
+        include: { category: true, type: true },
+      });
+
+      const filteredServices = services.filter((service) =>
+        service.category.name.toLowerCase().includes(category),
+      );
+
+      const servicesByCategory = filteredServices.map((service) => {
+        if (service.category.name.toLowerCase().includes(category)) {
+          const es = service.metadata
+            .filter((m: any) => m.language === 'es')
+            .flatMap((filteredNews: any) => ({
+              ...filteredNews,
+            }));
+
+          const en = service.metadata
+            .filter((m: any) => m.language === 'en')
+            .flatMap((filteredNews: any) => ({
+              ...filteredNews,
+            }));
+          return {
+            id: service.id,
+            categoryId: service.categoryId,
+            typeId: service.typeId,
+            image: service.image,
+            es: es[0],
+            en: en[0],
+            created_At: service.created_At,
+            updated_At: service.updated_At,
+            category: service.category.name,
+            typeEs: service.type.nameEs,
+            typeEn: service.type.nameEn,
+          };
+        }
+      });
+      console.log(servicesByCategory);
+      return servicesByCategory;
     } catch (error) {
       throw new Error(error);
     }
