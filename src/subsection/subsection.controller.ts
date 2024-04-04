@@ -102,8 +102,19 @@ export class SubsectionController {
       // const auth0Token = await validateUser(idDecrypted, 'read:transparency');
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const subsection = await this.subsectionService.getById(id);
-      console.log(subsection)
+      console.log(subsection);
       return res.status(200).json(subsection);
+    } catch (error) {
+      return res.status(404).json({ error });
+    }
+  }
+
+  // Obtener marco legal
+  @Get('/legal/docs')
+  async getLegalFramework(@Res() res) {
+    try {
+      const subsections = await this.subsectionService.getLegalFramework();
+      return res.status(200).json(subsections);
     } catch (error) {
       return res.status(404).json({ error });
     }
@@ -137,7 +148,7 @@ export class SubsectionController {
   async getFilters(@Param('id') id: string, @Res() res) {
     try {
       const filters = await this.subsectionService.filterByDate(id);
-      return res.status(200).json( filters );
+      return res.status(200).json(filters);
     } catch (error) {
       return res.status(404).json({ error });
     }

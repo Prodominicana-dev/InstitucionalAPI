@@ -113,12 +113,11 @@ export class SubsectionService {
   // En base al ID, quiero extraer todos los años para hacer un filtro y los meses que estan registrados (documentos)
   async filterByDate(id: string) {
     const subsection = await this.getById(id);
-    if(!subsection){
+    if (!subsection) {
       throw new NotFoundException();
     }
-    
-    if(subsection.type !== 'document')
-      return;
+
+    if (subsection.type !== 'document') return;
     let filter = [];
     subsection.documents.map((doc) => {
       console.log(doc.date);
@@ -139,15 +138,32 @@ export class SubsectionService {
           filter[indexYear].months.push({ month, name: monthName });
         }
       }
-    
-    })
+    });
 
     // Ordenar los años de mayor a menor y los meses de menor a mayor
     filter.sort((a, b) => b.year - a.year);
     filter.forEach((item) => {
       item.months.sort((a, b) => a.month - b.month);
     });
-    return filter
+    return filter;
+  }
+
+  // Obtener todos los subsection que tengan como section "Marco Legal"
+  async getLegalFramework(): Promise<any> {
+    try {
+      const subsections = await this.prismaService.subsection.findMany({
+        include: { section: true, documents: true },
+      });
+
+      const subSection = subsections.filter((section) => {
+        return section.section.name.includes('Marco Legal');
+      });
+
+      console.log(subSection);
+      return subSection;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /* Activar una subseccion */
