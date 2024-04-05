@@ -170,6 +170,7 @@ export class ServiceService {
         updated_At: new Date(),
         status: data.status || oldService.status,
         categoryId: data.categoryId || oldService.categoryId,
+        typeId: data.typeId || oldService.typeId,
       };
       return await this.prismaService.service.update({
         where: { id },
