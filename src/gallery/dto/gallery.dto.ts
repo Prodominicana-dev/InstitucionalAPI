@@ -15,6 +15,10 @@ export class GalleryDto {
 
   @IsString()
   @IsEmpty()
+  date: string;
+
+  @IsString()
+  @IsEmpty()
   created_By: string;
 
   @IsString()
@@ -40,6 +44,10 @@ export class GalleryUpdateDto {
   @IsString()
   @IsEmpty()
   cover: string;
+
+  @IsString()
+  @IsEmpty()
+  date: string;
 
   @IsString()
   @IsEmpty()

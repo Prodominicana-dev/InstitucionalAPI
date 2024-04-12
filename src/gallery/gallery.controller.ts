@@ -167,6 +167,7 @@ export class GalleryController {
         updated_By: body.updated_By,
         updated_At: new Date(),
         title: body.title,
+        date: body.date,
         titleEn: body.titleEn,
       });
       return res.status(200).json(updatedGallery);
