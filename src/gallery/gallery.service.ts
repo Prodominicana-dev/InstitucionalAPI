@@ -132,6 +132,7 @@ export class GalleryService {
         where: {
           id,
         },
+        include: { photo: true },
       });
     } catch (error) {
       console.log(error);

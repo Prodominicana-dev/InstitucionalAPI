@@ -137,7 +137,7 @@ export class EventsService {
   // Obtener todos los eventos por idioma
   async findAllEnable(lang: string): Promise<Event[]> {
     const events = await this.prisma.event.findMany({
-      orderBy: { start_Date: 'desc' },
+      orderBy: { start_Date: 'asc' },
     });
 
     return events.flatMap((e: Event) => {
