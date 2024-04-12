@@ -71,6 +71,7 @@ export class StructureOrganizationalService {
             id: n.id,
             name: n.name,
             image: n.image,
+            isDirector: n.isDirector,
             department: n.department,
             ...filteredNews,
           }));
@@ -103,6 +104,7 @@ export class StructureOrganizationalService {
         id: member.id,
         image: member.image,
         name: member.name,
+        isDirector: member.isDirector,
         department: member.department,
         departmentId: member.departmentId,
         es: es[0],
@@ -121,17 +123,22 @@ export class StructureOrganizationalService {
         where: { departmentId: id },
         include: { department: true },
       });
-      return member.flatMap((n: any) => {
-        return n.metadata
-          .filter((m: any) => m.language === lang)
-          .map((filteredNews: any) => ({
-            id: n.id,
-            name: n.name,
-            image: n.image,
-            department: n.department,
-            ...filteredNews,
-          }));
-      });
+      return member
+        .flatMap((n: any) => {
+          return n.metadata
+            .filter((m: any) => m.language === lang)
+            .map((filteredNews: any) => ({
+              id: n.id,
+              name: n.name,
+              image: n.image,
+              isDirector: n.isDirector,
+              department: n.department,
+              ...filteredNews,
+            }));
+        })
+        .sort((a, b) =>
+          a.isDirector === b.isDirector ? 0 : a.isDirector ? -1 : 1,
+        );
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -141,10 +148,12 @@ export class StructureOrganizationalService {
   async createMember(data: any): Promise<Member> {
     try {
       const { es, en } = data;
+      const isDirector = data.isDirector === 'true';
       if (!es || !en) {
         return await this.prisma.member.create({
           data: {
             name: data.name,
+            isDirector: isDirector,
             departmentId: data.departmentId,
             image: data.image,
           },
@@ -156,6 +165,7 @@ export class StructureOrganizationalService {
         return await this.prisma.member.create({
           data: {
             name: data.name,
+            isDirector: isDirector,
             metadata: metadata || [],
             departmentId: data.departmentId,
             image: data.image,
@@ -176,11 +186,13 @@ export class StructureOrganizationalService {
       });
       if (!member) throw new NotFoundException('Miembro no encontrado');
       const { es, en } = data;
+      const isDirector = data.isDirector === 'true';
       if (!es || !en) {
         return await this.prisma.member.update({
           where: { id },
           data: {
             name: data.name,
+            isDirector: isDirector,
             departmentId: data.departmentId,
             image: data.image,
           },
@@ -191,6 +203,7 @@ export class StructureOrganizationalService {
         const metadata = [esData, enData];
         const newData = {
           name: data.name || member.name,
+          isDirector: isDirector,
           metadata,
           departmentId: data.departmentId || member.departmentId,
           image: data.image || member.image,

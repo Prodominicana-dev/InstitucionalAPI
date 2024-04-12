@@ -79,7 +79,12 @@ export class GalleryService {
   // Find all Gallery Images by EventID
   async findAll(): Promise<Gallery[]> {
     try {
-      return this.prismaService.gallery.findMany({ include: { photo: true } });
+      return this.prismaService.gallery.findMany({
+        orderBy: {
+          date: 'desc',
+        },
+        include: { photo: true },
+      });
     } catch (error) {
       console.log(error);
       throw error;
