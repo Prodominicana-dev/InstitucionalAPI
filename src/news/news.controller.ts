@@ -131,6 +131,17 @@ export class NewsController {
     }
   }
 
+  @Get(':lang/lastTwoNews')
+  async getLastTwoNews(@Param('lang') lang: string): Promise<any> {
+    try {
+      const lastTwoNews = await this.newsService.findLastTwo(lang);
+      return lastTwoNews;
+    } catch (error) {
+      // Manejar errores adecuadamente
+      throw new Error(error);
+    }
+  }
+
   // Obtener por id
   @Get('news/:id')
   async getOneNewsById(@Param('id') id: string, @Res() res) {

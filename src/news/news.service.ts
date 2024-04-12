@@ -152,6 +152,37 @@ export class NewsService {
     }
   }
 
+  /* Obtener las últimas 2 noticias */
+  async findLastTwo(lang: string): Promise<any> {
+    try {
+      const news = await this.prisma.news.findMany({
+        orderBy: {
+          date: 'desc',
+        },
+        include: {
+          category: true,
+        },
+        take: 2, // Obtener solo las últimas 2 noticias
+      });
+
+      return news.flatMap((n: any) => {
+        return n.metadata
+          .filter((m: any) => m.language === lang)
+          .map((filteredNews: any) => ({
+            id: n.id,
+            cover: n.cover,
+            status: n.status,
+            date: n.date,
+            images: n.images,
+            category: n.category,
+            ...filteredNews,
+          }));
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   // Obtener los id y title de noticia previa y la siguiente a la noticia actual
   async getPrevNextNews(id: string, lang: string): Promise<any> {
     const news = await this.findAll(lang);

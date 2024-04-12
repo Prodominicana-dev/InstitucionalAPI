@@ -117,6 +117,7 @@ model Gallery{
   title String @unique
   titleEn String @unique
   cover String?
+  date DateTime? @default(now())
   created_At DateTime? @default(now())
   updated_At DateTime? 
   created_By String?
@@ -141,6 +142,7 @@ model Member{
   id String @id @default(uuid())
   name String
   metadata Json[]
+  isDirector Boolean? @default(false)
   image String?
   departmentId String?
   department Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
