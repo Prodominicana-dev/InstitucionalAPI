@@ -384,6 +384,20 @@ export class GalleryController {
     }
   }
 
+  // Obtener las primeras 5 fotos de la galeria
+  @Get(':id/photo/limit')
+  async findLimitPhotos(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const gallery = await this.galleryService.getById(id);
+      if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
+      const photos = await this.galleryService.findAllPhotos(id);
+      return res.status(200).json(photos.slice(0, 5));
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   // Eliminar una foto de una galería
   @Delete(':id/photo/:photoId')
   async deletePhoto(
