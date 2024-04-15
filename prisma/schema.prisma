@@ -260,9 +260,22 @@ model Docs{
   date DateTime? @default(now())
   size String?
   tags String[]
-  createdAt DateTime @default(now())
   created_By String?
   updated_By String?
   created_At DateTime? @default(now())
   updated_At DateTime?
+}
+
+// Agenda
+
+model Schedule{
+  id String @id @default(uuid())
+  title String
+  titleEn String
+  date DateTime?
+  created_At DateTime? @default(now())
+  updated_At DateTime?
+  status Boolean? @default(true)
+  created_By String?
+  updated_By String?
 }
