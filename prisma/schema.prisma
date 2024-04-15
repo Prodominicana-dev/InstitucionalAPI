@@ -37,6 +37,8 @@ model Subsection{
   url String?
 }
 
+
+// Documentos de transparencia
 model Documents{
   id String @id @default(uuid())
   title String?
@@ -194,4 +196,73 @@ model ServiceType{
   created_By String?
   updated_By String?
   service Service[]
+}
+
+
+// Modelos de Directorio de exportación
+model Company{
+  id String @id @default(uuid())
+  rnc String @unique
+  name String
+  email String?
+  phone String?
+  province String?
+  website String?
+  image String?
+  address String?
+  fob Decimal?
+  created_By String?
+  updated_By String?
+  created_At DateTime @default(now())
+  updated_At DateTime?
+  authorized Boolean? @default(false)
+  product CompanyProduct[]
+}
+
+model Product{
+  id String @id @default(uuid())
+  code String @unique
+  name String
+  nameEn String
+  alias String?
+  aliasEn String?
+  company CompanyProduct[]
+}
+
+model Sector{
+  id String @id @default(uuid())
+  code String @unique
+  name String
+  nameEn String
+  alias String?
+  aliasEn String?
+  company CompanyProduct[]
+}
+
+model CompanyProduct{
+  company Company @relation(fields: [companyId], references: [rnc], onDelete: Cascade, onUpdate: Cascade)
+  companyId String
+  product Product @relation(fields: [productId], references: [code], onDelete: Cascade, onUpdate: Cascade)
+  productId String
+  sector Sector? @relation(fields: [chapter], references: [code], onDelete: Cascade, onUpdate: Cascade)
+  chapter String?
+  fob Decimal?
+  @@id([companyId, productId])
+}
+
+// Documentos generales.
+
+model Docs{
+  id String @id @default(uuid())
+  image String?
+  title String
+  name String?
+  date DateTime? @default(now())
+  size String?
+  tags String[]
+  createdAt DateTime @default(now())
+  created_By String?
+  updated_By String?
+  created_At DateTime? @default(now())
+  updated_At DateTime?
 }

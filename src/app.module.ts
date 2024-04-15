@@ -13,6 +13,10 @@ import { StructureOrganizationalModule } from './structure-organizational/struct
 import { NewsCategoryModule } from './news-category/news-category.module';
 import { EventCategoryModule } from './event-category/event-category.module';
 import { ServiceModule } from './service/service.module';
+import { ExportModule } from './export/export.module';
+import { ProductModule } from './product/product.module';
+import { SectorModule } from './sector/sector.module';
+import { DocsModule } from './docs/docs.module';
 
 @Module({
   imports: [
@@ -27,6 +31,10 @@ import { ServiceModule } from './service/service.module';
     NewsCategoryModule,
     EventCategoryModule,
     ServiceModule,
+    ExportModule,
+    ProductModule,
+    SectorModule,
+    DocsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
