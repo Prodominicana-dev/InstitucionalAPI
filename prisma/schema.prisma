@@ -37,6 +37,8 @@ model Subsection{
   url String?
 }
 
+
+// Documentos de transparencia
 model Documents{
   id String @id @default(uuid())
   title String?
@@ -246,3 +248,19 @@ model CompanyProduct{
   @@id([companyId, productId])
 }
 
+// Documentos generales.
+
+model Docs{
+  id String @id @default(uuid())
+  image String?
+  title String
+  name String?
+  date DateTime? @default(now())
+  size String?
+  tags String[]
+  createdAt DateTime @default(now())
+  created_By String?
+  updated_By String?
+  created_At DateTime? @default(now())
+  updated_At DateTime?
+}
