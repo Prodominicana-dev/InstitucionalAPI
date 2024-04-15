@@ -120,6 +120,25 @@ export class ExportController {
     }
   }
 
+  // Obtener exportadores por pagination
+  @Get('pagination/:perPage/:page')
+  async getExportersPagination(
+    @Param('perPage') perPage: number,
+    @Param('page') page: number,
+    @Res() res: Response,
+  ) {
+    try {
+      const exporters = await this.exportService.exportersPaginate(
+        page,
+        perPage,
+      );
+      return res.status(200).json(exporters);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error });
+    }
+  }
+
   // Obtener exportador por RNC
   @Get(':rnc')
   async getExporter(@Param('rnc') rnc: string, @Res() res: Response) {
