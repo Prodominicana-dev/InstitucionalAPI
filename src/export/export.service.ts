@@ -16,7 +16,25 @@ export class ExportService {
   async createExporter(data: any) {
     try {
       return await this.prismaService.company.create({
-        data,
+        data: {
+          name: data.name,
+          rnc: data.rnc,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          authorized: data.authorized,
+          fob: data.fob,
+          province: data.province,
+          product: {
+            create: data.products?.map((product: any) => ({
+              product: {
+                connect: { code: product },
+              },
+            })),
+          },
+          website: data.website,
+          created_By: data.created_By,
+        },
       });
     } catch (error) {
       console.log(error);
@@ -28,10 +46,26 @@ export class ExportService {
   async updateExporter(id: string, data: any) {
     try {
       return await this.prismaService.company.update({
-        where: { rnc: id },
+        where: { id: id },
         data: {
-          ...data,
+          name: data.name,
+          rnc: data.rnc,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          authorized: data.authorized,
+          fob: data.fob,
+          province: data.province,
+          product: {
+            deleteMany: {},
+            create: data.products.map((product: any) => ({
+              product: {
+                connect: { code: product },
+              },
+            })),
+          },
           updated_At: new Date(),
+          website: data.website,
         },
       });
     } catch (error) {
@@ -40,11 +74,23 @@ export class ExportService {
     }
   }
 
+  async update(id: string, data: any) {
+    try {
+      return await this.prismaService.company.update({
+        where: { id },
+        data: data,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  }
+
   // Eliminar un exportador
-  async deleteExporter(rnc: string) {
+  async deleteExporter(id: string) {
     try {
       return await this.prismaService.company.delete({
-        where: { rnc },
+        where: { id },
       });
     } catch (error) {
       console.log(error);

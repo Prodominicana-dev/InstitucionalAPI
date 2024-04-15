@@ -9,6 +9,7 @@ import {
   Res,
   UseInterceptors,
   UploadedFiles,
+  StreamableFile,
 } from '@nestjs/common';
 import { ExportService } from './export.service';
 import { Response } from 'express';
@@ -34,19 +35,29 @@ export class ExportController {
   ) {
     try {
       console.log(body);
+      // Convertir products a array de strings
+      const products = body.products.split(',');
+      // Convertir sectors a array de strings
+      //const sectors = body.sectors.split(',');
+      //body.sectors = sectors;
+      body.products = products;
+      // Convertir authorized a boolean
+      body.authorized = body.authorized === 'true';
+      // Convertir FOB a decimal
+      body.fob = parseFloat(body.fob);
       const exporter = await this.exportService.createExporter(body);
       if (files === undefined) return res.status(201).json(exporter);
       await files.forEach(async (file) => {
         const pathFolder = path.join(
           process.cwd(),
-          `/public/export/${exporter.rnc}`,
+          `/public/export/${exporter.id}`,
         );
         if (!fs.existsSync(pathFolder)) {
           fs.mkdirSync(pathFolder, { recursive: true });
         }
         const fileName = `${new Date().getTime()}.${mime.extension(file.mimetype)}`;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        await this.exportService.updateExporter(exporter.rnc, {
+        await this.exportService.update(exporter.id, {
           image: fileName,
         });
       });
@@ -58,23 +69,29 @@ export class ExportController {
   }
 
   // Editar exportador
-  @Patch(':rnc')
+  @Patch(':id')
   @UseInterceptors(FilesInterceptor('images'))
   async updateExporter(
-    @Param('rnc') rnc: string,
+    @Param('id') id: string,
     @Body() body: any,
     @Res() res: Response,
     @UploadedFiles() files?,
   ) {
     try {
-      const exporter = await this.exportService.updateExporter(rnc, body);
+      const products = body.products.split(',');
+      // Convertir sectors a array de strings
+      //const sectors = body.sectors.split(',');
+      //body.sectors = sectors;
+      body.products = products;
+      // Convertir authorized a boolean
+      body.authorized = body.authorized === 'true';
+      // Convertir FOB a decimal
+      body.fob = parseFloat(body.fob);
+      const exporter = await this.exportService.updateExporter(id, body);
       if (files === undefined || files.length === 0) {
         return res.status(200).json(exporter);
       }
-      const pathFolder = path.join(
-        process.cwd(),
-        `/public/export/${exporter.rnc}`,
-      );
+      const pathFolder = path.join(process.cwd(), `/public/export/${id}`);
       await rimraf(pathFolder);
 
       await files.forEach(async (file) => {
@@ -83,7 +100,7 @@ export class ExportController {
         }
         const fileName = `${new Date().getTime()}.${mime.extension(file.mimetype)}`;
         await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        await this.exportService.updateExporter(exporter.rnc, {
+        await this.exportService.update(id, {
           image: fileName,
         });
       });
@@ -95,12 +112,16 @@ export class ExportController {
   }
 
   // Eliminar exportador
-  @Delete(':rnc')
-  async deleteExporter(@Param('rnc') rnc: string, @Res() res: Response) {
+  @Delete(':id')
+  async deleteExporter(@Param('id') id: string, @Res() res: Response) {
     try {
-      const exporter = await this.exportService.deleteExporter(rnc);
+      const exporter = await this.exportService.deleteExporter(id);
       // Eliminar carpeta con imagenes
-      const pathFolder = path.join(process.cwd(), `/public/export/${rnc}`);
+      const pathFolder = path.join(process.cwd(), `/public/export/${id}`);
+      if (!fs.existsSync) {
+        return res.status(200).json(exporter);
+      }
+      await rimraf(pathFolder);
       return res.status(200).json(exporter);
     } catch (error) {
       console.log(error);
@@ -161,5 +182,28 @@ export class ExportController {
       console.log(error);
       return res.status(500).json({ error });
     }
+  }
+
+  // Obtener imagen de exportador
+  @Get('/img/:id/:name')
+  getImages(
+    @Param('id') id: string,
+    @Param('name') imageName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    //res.set({ 'Content-Type': 'image/jpeg' });
+    const imagePath = path.join(
+      process.cwd(),
+      `public/export/${id}`,
+      imageName,
+    );
+    const mimeType = mime.lookup(imageName);
+    if (!mimeType) {
+      return undefined;
+    }
+    const fileStream = fs.createReadStream(imagePath);
+    const streamableFile = new StreamableFile(fileStream);
+    streamableFile.options.type = mimeType;
+    return streamableFile;
   }
 }

@@ -205,7 +205,12 @@ model Company{
   province String?
   website String?
   image String?
+  address String?
   fob Decimal?
+  created_By String?
+  updated_By String?
+  created_At DateTime @default(now())
+  updated_At DateTime?
   authorized Boolean? @default(false)
   product CompanyProduct[]
 }
@@ -235,8 +240,8 @@ model CompanyProduct{
   companyId String
   product Product @relation(fields: [productId], references: [code], onDelete: Cascade, onUpdate: Cascade)
   productId String
-  sector Sector @relation(fields: [chapter], references: [code], onDelete: Cascade, onUpdate: Cascade)
-  chapter String
+  sector Sector? @relation(fields: [chapter], references: [code], onDelete: Cascade, onUpdate: Cascade)
+  chapter String?
   fob Decimal?
   @@id([companyId, productId])
 }
