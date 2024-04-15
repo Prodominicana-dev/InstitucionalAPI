@@ -6,7 +6,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const products = require('../public/products.json');
 const sectors = require('../public/sectors.json');
-const exportersDirectory = require('../public/exportersDirectory.json');
+const exportersDirectory = require('../public/exporters.json');
 const exporterProductRelation = require('../public/exporterProductRelation.json');
 const readline = require('readline').createInterface({
   input: process.stdin,
@@ -63,6 +63,7 @@ async function seedDatabase() {
         data: {
           name: exporter.name,
           rnc: exporter.rnc,
+          address: exporter.address || 'N/A',
           phone: exporter.phone || 'N/A',
           email: exporter.email || 'N/A',
           province: exporter.province || 'N/A',
