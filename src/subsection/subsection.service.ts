@@ -50,7 +50,7 @@ export class SubsectionService {
           ? data.description
           : subsection.description,
         type: data.type,
-        url: data.url ? data.url : subsection.url,
+        url: data.url !== '' ? data.url : subsection.url,
         status: data.status ? data.status : subsection.status,
       };
       return this.prismaService.subsection

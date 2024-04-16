@@ -62,10 +62,10 @@ export class SectionService {
         priority: data.priority ? data.priority : section.priority,
         status: data.status ? data.status : section.status,
         type: data.type,
-        url: data.url ? data.url : section.url,
+        url: data.url !== '' ? data.url : section.url,
       };
       console.log(data);
-      console.log(section);
+      console.log(newData);
       return this.prismaService.section.update({
         where: { id },
         data: newData,
