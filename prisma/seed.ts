@@ -63,12 +63,21 @@ async function seedDatabase() {
         data: {
           name: exporter.name,
           rnc: exporter.rnc,
-          address: exporter.address.toString() || 'N/A',
-          phone: exporter.phone.toString() || 'N/A',
-          email: exporter.email.toString() || 'N/A',
-          province: exporter.province.toString() || 'N/A',
-          fob: exporter.fob,
-          authorized: Boolean(exporter.authorized),
+          address: exporter.address ? exporter.address.toString() : 'N/A',
+          phone: exporter.phone ? exporter.phone.toString() : 'N/A',
+          email:
+            exporter.email && exporter.email === ' '
+              ? exporter.email.toString()
+              : 'N/A',
+          province:
+            exporter.province && exporter.province === ' '
+              ? exporter.province.toString()
+              : 'N/A',
+          fob: exporter.fob ? exporter.fob : 0,
+          website: exporter.website ? exporter.website.toString() : 'N/A',
+          authorized: exporter.authorized
+            ? exporter.authorized.trim() === 'true'
+            : false,
         },
       });
     }
