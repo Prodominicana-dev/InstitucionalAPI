@@ -80,7 +80,7 @@ export class SectionService {
   async getAllSections(): Promise<any[]> {
     try {
       const sections = await this.prismaService.section.findMany({
-        orderBy: [{ status: 'desc' }, { priority: 'asc' }],
+        orderBy: [{ priority: 'asc' }, { status: 'desc' }],
         include: {
           documents: true,
           subsection: { include: { documents: true } },
@@ -115,7 +115,7 @@ export class SectionService {
   async getAllSectionsAdmin(): Promise<Section[]> {
     try {
       const sections = await this.prismaService.section.findMany({
-        orderBy: [{ status: 'asc' }, { priority: 'asc' }],
+        orderBy: [{ priority: 'asc' }, { status: 'asc' }],
         include: { documents: true, subsection: true },
       });
       const secDocuments = sections.filter((section) => {
