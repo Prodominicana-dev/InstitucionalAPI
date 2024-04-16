@@ -104,6 +104,7 @@ export class ExportService {
       return await this.prismaService.company.findMany({
         include: { product: { include: { product: true, sector: true } } },
         where: { authorized },
+        orderBy: { fob: 'desc' },
       });
     } catch (error) {
       console.log(error);
