@@ -5,12 +5,10 @@ import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   dotenv.config();
-  const app = await NestFactory.create(AppModule, {
-    cors: {
-      origin: ['http://localhost:3000', 'https://prodominicana.gob.do'],
-      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-      credentials: true,
-    },
+  const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   });
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));
