@@ -173,4 +173,62 @@ export class ExportService {
       throw new Error(error);
     }
   }
+
+  // Buscar entre todos los products que estan en los exportadores y devolver una lista con todos, sin repeticiones
+  async getProducts() {
+    try {
+      const exporters = await this.exporters();
+      const products = exporters.map((exporter) =>
+        exporter.product.map((product) => product.product.name),
+      );
+      const productsList = products.flat();
+      const mergedProducts = productsList.reduce(
+        (acc, cur) => acc.concat(cur),
+        [],
+      );
+      console.log(mergedProducts);
+      return [...new Set(mergedProducts)];
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  }
+
+  // Buscar entre todos los sectores que estan en los exportadores y devolver una lista con todos, sin repeticiones
+  async getSectors() {
+    try {
+      const exporters = await this.exporters();
+      const sectors = exporters.map((exporter) =>
+        exporter.product.map((product) => {
+          if (product.sector) {
+            return product.sector.name;
+          } else {
+            return null; // Puedes realizar alguna acción alternativa aquí si es necesario
+          }
+        }),
+      );
+      const sectorsList = sectors.flat();
+      const mergedSectors = sectorsList.reduce(
+        (acc, cur) => acc.concat(cur),
+        [],
+      );
+      console.log(mergedSectors);
+      return [...new Set(mergedSectors)];
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  }
+
+  // Buscar entre todos los exportadores y devolver una lista con todas las provincias, sin repeticiones
+  async getProvinces() {
+    try {
+      const exporters = await this.exporters();
+      const provinces = exporters.map((exporter) => exporter.province);
+      return [...new Set(provinces)];
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  }
 }

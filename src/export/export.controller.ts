@@ -206,4 +206,40 @@ export class ExportController {
     streamableFile.options.type = mimeType;
     return streamableFile;
   }
+
+  // Obtener todos los productos vinculados a los exportadores
+  @Get('/all/a/b/products')
+  async getProducts(@Res() res: Response) {
+    try {
+      const products = await this.exportService.getProducts();
+      return res.status(200).json(products);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error });
+    }
+  }
+
+  // Obtener todos los sectores vinculados a los exportadores
+  @Get('all/c/d/sectors')
+  async getSectors(@Res() res: Response) {
+    try {
+      const sectors = await this.exportService.getSectors();
+      return res.status(200).json(sectors);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error });
+    }
+  }
+
+  // Obtener todas las provincias
+  @Get('provinces')
+  async getProvinces(@Res() res: Response) {
+    try {
+      const provinces = await this.exportService.getProvinces();
+      return res.status(200).json(provinces);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error });
+    }
+  }
 }
