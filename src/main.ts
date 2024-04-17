@@ -10,8 +10,8 @@ async function bootstrap() {
     origin: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
   });
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ limit: '50mb', extended: true }));
+  app.use(json({ limit: '200mb' }));
+  app.use(urlencoded({ limit: '200mb', extended: true }));
   await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }
 bootstrap();

@@ -44,32 +44,47 @@ export class DocsController {
       const document = await this.docsService.createDocument(body);
       if (files === undefined) return document;
       await files.forEach(async (file) => {
-        console.log(file.size);
-        const pathFolder = path.join(
-          process.cwd(),
-          `/public/gen-docs/${document.id}`,
+        const currentDirectory = process.cwd();
+        const parentDirectory = path.dirname(currentDirectory);
+        const targetDirectory = path.join(parentDirectory, 'Institucional');
+
+        const pathFolder = path.join(targetDirectory, '/public/Documentos');
+
+        const imageFolder = path.join(
+          currentDirectory,
+          'public/gen-docs',
+          `${document.id}`,
         );
+
         if (!fs.existsSync(pathFolder)) {
           fs.mkdirSync(pathFolder, { recursive: true });
         }
+
+        if (!fs.existsSync(imageFolder)) {
+          fs.mkdirSync(imageFolder, { recursive: true });
+        }
+
         const options = {
           firstPageToConvert: 1,
           lastPageToConvert: 1,
           pngFile: true,
         };
         const fileName = `${new Date().getTime()}.${mime.extension(file.mimetype)}`;
-        await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
+        await fs.writeFileSync(
+          path.join(pathFolder, file.originalname),
+          file.buffer,
+        );
         const imageName = `${new Date().getTime()}`;
-        const firstPageName = `${pathFolder}/${imageName}`;
+        const firstPageName = `${imageFolder}/${imageName}`;
         await poppler.pdfToCairo(
-          `${pathFolder}/${fileName}`,
+          `${pathFolder}/${files[0].originalname}`,
           firstPageName,
           options,
         );
 
         // Editar el filename
         await this.docsService.updateDocument(document.id, {
-          name: fileName,
+          name: files[0].originalname,
           image: `${imageName}`,
           size: files[0].size.toString(),
         });
@@ -98,34 +113,56 @@ export class DocsController {
       const document = await this.docsService.updateDocument(id, body);
       if (files === undefined) return document;
       await files.forEach(async (file) => {
-        const pathFolder = path.join(
-          process.cwd(),
-          `/public/gen-docs/${document.id}`,
+        const currentDirectory = process.cwd();
+        const parentDirectory = path.dirname(currentDirectory);
+        const targetDirectory = path.join(parentDirectory, 'Institucional');
+
+        const pathFolder = path.join(targetDirectory, '/public/Documentos');
+
+        const imageFolder = path.join(
+          currentDirectory,
+          'public/gen-docs',
+          `${document.id}`,
         );
-        if (!fs.existsSync(pathFolder)) {
-          await fs.mkdirSync(pathFolder, { recursive: true });
-        } else {
-          await rimraf(pathFolder);
-          await fs.mkdirSync(pathFolder, { recursive: true });
+
+        // Verificar si existe el documento en pathFolder. SI existe, lo eliminamos
+        if (fs.existsSync(path.join(pathFolder, document.name))) {
+          await fs.unlinkSync(path.join(pathFolder, document.name));
         }
+
+        // Verificar si existe la carpeta de la imagen. SI existe, la eliminamos y la creamos de nuevo
+        if (fs.existsSync(imageFolder)) {
+          await rimraf(imageFolder);
+          await fs.mkdirSync(imageFolder, { recursive: true });
+        }
+
+        // if (!fs.existsSync(pathFolder)) {
+        //   await fs.mkdirSync(pathFolder, { recursive: true });
+        // } else {
+        //   await rimraf(pathFolder);
+        //   await fs.mkdirSync(pathFolder, { recursive: true });
+        // }
         const options = {
           firstPageToConvert: 1,
           lastPageToConvert: 1,
           pngFile: true,
         };
         const fileName = `${new Date().getTime()}.${mime.extension(file.mimetype)}`;
-        await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
+        await fs.writeFileSync(
+          path.join(pathFolder, file.originalname),
+          file.buffer,
+        );
         const imageName = `${new Date().getTime()}`;
-        const firstPageName = `${pathFolder}/${imageName}`;
+        const firstPageName = `${imageFolder}/${imageName}`;
         await poppler.pdfToCairo(
-          `${pathFolder}/${fileName}`,
+          `${pathFolder}/${files[0].originalname}`,
           firstPageName,
           options,
         );
 
         // Editar el filename
         await this.docsService.updateDocument(document.id, {
-          name: fileName,
+          name: files[0].originalname,
           image: `${imageName}`,
           size: files[0].size.toString(),
         });
@@ -142,13 +179,26 @@ export class DocsController {
     try {
       // Buscar el documento
       const document = await this.docsService.getDocumentById(id);
-      // ELiminar de la carpeta
-      const pathFolder = path.join(
-        process.cwd(),
-        `/public/gen-docs/${document.id}/`,
+      const currentDirectory = process.cwd();
+      const parentDirectory = path.dirname(currentDirectory);
+      const targetDirectory = path.join(parentDirectory, 'Institucional');
+
+      const pathFolder = path.join(targetDirectory, '/public/Documentos');
+
+      const imageFolder = path.join(
+        currentDirectory,
+        'public/gen-docs',
+        `${document.id}`,
       );
-      if (fs.existsSync(pathFolder)) {
-        await rimraf(pathFolder);
+
+      // Verificar si existe el documento en pathFolder. SI existe, lo eliminamos
+      if (fs.existsSync(path.join(pathFolder, document.name))) {
+        await fs.unlinkSync(path.join(pathFolder, document.name));
+      }
+
+      // Verificar si existe la carpeta de la imagen. SI existe, la eliminamos
+      if (fs.existsSync(imageFolder)) {
+        await rimraf(imageFolder);
       }
 
       return await this.docsService.deleteDocument(id);
