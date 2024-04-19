@@ -24,7 +24,6 @@ export class ProductService {
         where: { id },
         data: {
           ...data,
-          updated_At: new Date(),
         },
       });
     } catch (error) {

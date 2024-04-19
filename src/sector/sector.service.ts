@@ -24,7 +24,6 @@ export class SectorService {
         where: { id },
         data: {
           ...data,
-          updated_At: new Date(),
         },
       });
     } catch (error) {
@@ -48,7 +47,9 @@ export class SectorService {
   // Obtener todos los sectores
   async sectors() {
     try {
-      return await this.prismaService.sector.findMany();
+      return await this.prismaService.sector.findMany({
+        orderBy: { code: 'asc' },
+      });
     } catch (error) {
       console.log(error);
       throw new Error(error);
