@@ -7,10 +7,12 @@ import {
   Param,
   Body,
   Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { SubsectionService } from './subsection.service';
 import { validateUser } from 'src/validation/validation';
 import { rimraf } from 'rimraf';
+import { Response } from 'express';
 const CryptoJS = require('crypto-js');
 const path = require('path');
 const fs = require('fs');
@@ -176,5 +178,46 @@ export class SubsectionController {
     } catch (error) {
       return res.status(500).json({ error });
     }
+  }
+
+  // Descargar los documentos PDF de una subseccion
+  @Get('pdf/:sectId/:id/:pdfName')
+  getPostPdf(
+    @Param('sectId') sectId: string,
+    @Param('id') id: string,
+    @Param('pdfName') pdfName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    res.set({ 'Content-Type': 'application/pdf' });
+    const pdfPath = path.join(
+      process.cwd(),
+      `public/docs/${sectId}/${id}`,
+      pdfName,
+    );
+    const fileStream = fs.createReadStream(pdfPath);
+    const streamableFile = new StreamableFile(fileStream);
+    return streamableFile;
+  }
+
+  // Descargar los documentos EXCEL de una subseccion
+  @Get('excel/:sectId/:id/:excelName')
+  getPostExcel(
+    @Param('sectId') sectId: string,
+    @Param('id') id: string,
+    @Param('excelName') excelName: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const excelPath = path.join(
+      process.cwd(),
+      `public/docs/${sectId}/${id}`,
+      excelName,
+    );
+    const fileStream = fs.createReadStream(excelPath);
+    const streamableFile = new StreamableFile(fileStream);
+    return streamableFile;
   }
 }
