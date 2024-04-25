@@ -55,6 +55,27 @@ export class SectorService {
       throw new Error(error);
     }
   }
+  async exportedSectors(lang: string) {
+    try {
+      return await this.prismaService.sector.groupBy({
+        where: {
+          company: {
+            some: {},
+          },
+          AND: [
+            lang === 'es'
+              ? { alias: { not: null } }
+              : { aliasEn: { not: null } },
+          ],
+        },
+        by: [lang === 'es' ? 'alias' : 'aliasEn'],
+        orderBy: [lang === 'es' ? { alias: 'asc' } : { aliasEn: 'asc' }],
+      });
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  }
 
   // Obtener por code
   async sectorByCode(code: string) {

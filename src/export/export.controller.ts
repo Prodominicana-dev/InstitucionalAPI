@@ -142,16 +142,22 @@ export class ExportController {
   }
 
   // Obtener exportadores por pagination
-  @Get('pagination/:perPage/:page')
+  @Post('pagination')
   async getExportersPagination(
-    @Param('perPage') perPage: number,
-    @Param('page') page: number,
+    @Body('perPage') perPage: number,
+    @Body('page') page: number,
+    @Body('search') search: string,
+    @Body('product') product: string,
+    @Body('sector') sector: string,
     @Res() res: Response,
   ) {
     try {
       const exporters = await this.exportService.exportersPaginate(
         page,
         perPage,
+        search,
+        product,
+        sector,
       );
       return res.status(200).json(exporters);
     } catch (error) {
@@ -205,30 +211,6 @@ export class ExportController {
     const streamableFile = new StreamableFile(fileStream);
     streamableFile.options.type = mimeType;
     return streamableFile;
-  }
-
-  // Obtener todos los productos vinculados a los exportadores
-  @Get('/all/a/b/products')
-  async getProducts(@Res() res: Response) {
-    try {
-      const products = await this.exportService.getProducts();
-      return res.status(200).json(products);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error });
-    }
-  }
-
-  // Obtener todos los sectores vinculados a los exportadores
-  @Get('all/c/d/sectors')
-  async getSectors(@Res() res: Response) {
-    try {
-      const sectors = await this.exportService.getSectors();
-      return res.status(200).json(sectors);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error });
-    }
   }
 
   // Obtener todas las provincias

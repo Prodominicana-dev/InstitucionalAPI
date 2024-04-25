@@ -57,6 +57,17 @@ export class ProductController {
     }
   }
 
+  // Obtener todos los productos exportados
+  @Post('/exported')
+  async exportedProducts(@Body() body: any) {
+    try {
+      const products = await this.productService.exportedProducts(body.lang);
+      return products;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   // Obtener un producto por code
   @Get(':code')
   async product(@Param('code') code: string) {

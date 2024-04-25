@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { IsNotEmpty } from 'class-validator';
 
 @Injectable()
 export class ProductService {
@@ -48,6 +49,28 @@ export class ProductService {
   async products() {
     try {
       return await this.prismaService.product.findMany();
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
+    }
+  }
+
+  async exportedProducts(lang: string) {
+    try {
+      return await this.prismaService.product.groupBy({
+        where: {
+          company: {
+            some: {},
+          },
+          AND: [
+            lang === 'es'
+              ? { alias: { not: null } }
+              : { aliasEn: { not: null } },
+          ],
+        },
+        by: [lang === 'es' ? 'alias' : 'aliasEn'],
+        orderBy: [lang === 'es' ? { alias: 'asc' } : { aliasEn: 'asc' }],
+      });
     } catch (error) {
       console.log(error);
       throw new Error(error);

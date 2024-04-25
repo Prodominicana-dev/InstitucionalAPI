@@ -113,13 +113,55 @@ export class ExportService {
   }
 
   // Pagination for exporters
-  async exportersPaginate(page?: number, perPage?: number) {
+  async exportersPaginate(
+    page?: number,
+    perPage?: number,
+    search?: string,
+    product?: string,
+    sector?: string,
+  ) {
     try {
+      let whereClause = {
+        authorized: true,
+        AND: [],
+      };
+      if (search) {
+        whereClause.AND.push({
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { province: { contains: search, mode: 'insensitive' } },
+            {
+              product: {
+                some: {
+                  product: {
+                    OR: [
+                      { code: { contains: search, mode: 'insensitive' } },
+                      { alias: { contains: product, mode: 'insensitive' } },
+                      { aliasEn: { contains: product, mode: 'insensitive' } },
+                      { name: { contains: search, mode: 'insensitive' } },
+                      { nameEn: { contains: search, mode: 'insensitive' } },
+                    ],
+                  },
+                  sector: {
+                    OR: [
+                      { code: { contains: search, mode: 'insensitive' } },
+                      { alias: { contains: sector, mode: 'insensitive' } },
+                      { aliasEn: { contains: sector, mode: 'insensitive' } },
+                      { name: { contains: search, mode: 'insensitive' } },
+                      { nameEn: { contains: search, mode: 'insensitive' } },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        });
+      }
       return await paginate(
         this.prismaService.company,
         {
           include: { product: { include: { product: true, sector: true } } },
-          where: { authorized: true },
+          where: whereClause,
           orderBy: { fob: 'desc' },
         },
         { page, perPage: perPage || 27 },
@@ -169,52 +211,6 @@ export class ExportService {
       return await this.prismaService.company.findUnique({
         where: { rnc },
       });
-    } catch (error) {
-      console.log(error);
-      throw new Error(error);
-    }
-  }
-
-  // Buscar entre todos los products que estan en los exportadores y devolver una lista con todos, sin repeticiones
-  async getProducts() {
-    try {
-      const exporters = await this.exporters();
-      const products = exporters.map((exporter) =>
-        exporter.product.map((product) => product.product.name),
-      );
-      const productsList = products.flat();
-      const mergedProducts = productsList.reduce(
-        (acc, cur) => acc.concat(cur),
-        [],
-      );
-      console.log(mergedProducts);
-      return [...new Set(mergedProducts)];
-    } catch (error) {
-      console.log(error);
-      throw new Error(error);
-    }
-  }
-
-  // Buscar entre todos los sectores que estan en los exportadores y devolver una lista con todos, sin repeticiones
-  async getSectors() {
-    try {
-      const exporters = await this.exporters();
-      const sectors = exporters.map((exporter) =>
-        exporter.product.map((product) => {
-          if (product.sector) {
-            return product.sector.name;
-          } else {
-            return null; // Puedes realizar alguna acción alternativa aquí si es necesario
-          }
-        }),
-      );
-      const sectorsList = sectors.flat();
-      const mergedSectors = sectorsList.reduce(
-        (acc, cur) => acc.concat(cur),
-        [],
-      );
-      console.log(mergedSectors);
-      return [...new Set(mergedSectors)];
     } catch (error) {
       console.log(error);
       throw new Error(error);
