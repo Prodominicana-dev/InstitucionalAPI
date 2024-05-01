@@ -68,14 +68,8 @@ async function seedDatabase() {
           rnc: exporter.rnc,
           address: exporter.address ? exporter.address.toString() : null,
           phone: exporter.phone ? exporter.phone.toString() : null,
-          email:
-            exporter.email && exporter.email === ' '
-              ? exporter.email.toString()
-              : 'N/A',
-          province:
-            exporter.province && exporter.province === ' '
-              ? exporter.province.toString()
-              : null,
+          email: exporter.email ? exporter.email.toString() : null,
+          province: exporter.province ? exporter.province.toString() : null,
           fob: exporter.fob ? exporter.fob : 0,
           website: exporter.website ? exporter.website.toString() : null,
           authorized: exporter.authorized

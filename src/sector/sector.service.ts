@@ -57,7 +57,7 @@ export class SectorService {
   }
   async exportedSectors(lang: string) {
     try {
-      return await this.prismaService.sector.groupBy({
+      const sectors = await this.prismaService.sector.groupBy({
         where: {
           company: {
             some: {},
@@ -71,6 +71,10 @@ export class SectorService {
         by: [lang === 'es' ? 'alias' : 'aliasEn'],
         orderBy: [lang === 'es' ? { alias: 'asc' } : { aliasEn: 'asc' }],
       });
+
+      return sectors.map((item) => ({
+        name: item[lang === 'es' ? 'alias' : 'aliasEn'],
+      }));
     } catch (error) {
       console.log(error);
       throw new Error(error);

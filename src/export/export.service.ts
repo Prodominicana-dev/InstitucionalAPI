@@ -136,8 +136,8 @@ export class ExportService {
                   product: {
                     OR: [
                       { code: { contains: search, mode: 'insensitive' } },
-                      { alias: { contains: product, mode: 'insensitive' } },
-                      { aliasEn: { contains: product, mode: 'insensitive' } },
+                      { alias: { contains: search, mode: 'insensitive' } },
+                      { aliasEn: { contains: search, mode: 'insensitive' } },
                       { name: { contains: search, mode: 'insensitive' } },
                       { nameEn: { contains: search, mode: 'insensitive' } },
                     ],
@@ -145,8 +145,8 @@ export class ExportService {
                   sector: {
                     OR: [
                       { code: { contains: search, mode: 'insensitive' } },
-                      { alias: { contains: sector, mode: 'insensitive' } },
-                      { aliasEn: { contains: sector, mode: 'insensitive' } },
+                      { alias: { contains: search, mode: 'insensitive' } },
+                      { aliasEn: { contains: search, mode: 'insensitive' } },
                       { name: { contains: search, mode: 'insensitive' } },
                       { nameEn: { contains: search, mode: 'insensitive' } },
                     ],
@@ -155,6 +155,35 @@ export class ExportService {
               },
             },
           ],
+        });
+      }
+      if (sector) {
+        whereClause.AND.push({
+          product: {
+            some: {
+              sector: {
+                OR: [
+                  { alias: { contains: sector, mode: 'insensitive' } },
+                  { aliasEn: { contains: sector, mode: 'insensitive' } },
+                ],
+              },
+            },
+          },
+        });
+      }
+
+      if (product) {
+        whereClause.AND.push({
+          product: {
+            some: {
+              product: {
+                OR: [
+                  { alias: { contains: product, mode: 'insensitive' } },
+                  { aliasEn: { contains: product, mode: 'insensitive' } },
+                ],
+              },
+            },
+          },
         });
       }
       return await paginate(
@@ -216,13 +245,13 @@ export class ExportService {
       throw new Error(error);
     }
   }
-
-  // Buscar entre todos los exportadores y devolver una lista con todas las provincias, sin repeticiones
   async getProvinces() {
     try {
-      const exporters = await this.exporters();
-      const provinces = exporters.map((exporter) => exporter.province);
-      return [...new Set(provinces)];
+      return await this.prismaService.company.groupBy({
+        by: ['province'],
+        orderBy: [{ province: 'asc' }],
+        where: { authorized: true, province: { not: null } },
+      });
     } catch (error) {
       console.log(error);
       throw new Error(error);

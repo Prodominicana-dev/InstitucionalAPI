@@ -141,14 +141,25 @@ export class ExportController {
     }
   }
 
+  // Obtener todas las provincias
+  @Get('/provinces')
+  async getProvinces(@Res() res: Response) {
+    try {
+      const provinces = await this.exportService.getProvinces();
+      return res.status(200).json(provinces);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error });
+    }
+  }
   // Obtener exportadores por pagination
-  @Post('pagination')
+  @Post('/pagination')
   async getExportersPagination(
     @Body('perPage') perPage: number,
     @Body('page') page: number,
     @Body('search') search: string,
-    @Body('product') product: string,
-    @Body('sector') sector: string,
+    @Body('selectedProduct') product: string,
+    @Body('selectedSector') sector: string,
     @Res() res: Response,
   ) {
     try {
@@ -211,17 +222,5 @@ export class ExportController {
     const streamableFile = new StreamableFile(fileStream);
     streamableFile.options.type = mimeType;
     return streamableFile;
-  }
-
-  // Obtener todas las provincias
-  @Get('provinces')
-  async getProvinces(@Res() res: Response) {
-    try {
-      const provinces = await this.exportService.getProvinces();
-      return res.status(200).json(provinces);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error });
-    }
   }
 }
