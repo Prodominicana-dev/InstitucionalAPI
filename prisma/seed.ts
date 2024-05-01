@@ -18,6 +18,9 @@ let successfulRelations = 0;
 let errors = 0;
 
 async function seedDatabase() {
+  await prisma.companyProduct.truncate();
+  await prisma.company.truncate();
+  await prisma.sector.truncate();
   console.log(
     'Creando las empresas exportadoras del directorio... Espere un momento.',
   );
@@ -63,8 +66,8 @@ async function seedDatabase() {
         data: {
           name: exporter.name,
           rnc: exporter.rnc,
-          address: exporter.address ? exporter.address.toString() : 'N/A',
-          phone: exporter.phone ? exporter.phone.toString() : 'N/A',
+          address: exporter.address ? exporter.address.toString() : null,
+          phone: exporter.phone ? exporter.phone.toString() : null,
           email:
             exporter.email && exporter.email === ' '
               ? exporter.email.toString()
@@ -72,9 +75,9 @@ async function seedDatabase() {
           province:
             exporter.province && exporter.province === ' '
               ? exporter.province.toString()
-              : 'N/A',
+              : null,
           fob: exporter.fob ? exporter.fob : 0,
-          website: exporter.website ? exporter.website.toString() : 'N/A',
+          website: exporter.website ? exporter.website.toString() : null,
           authorized: exporter.authorized
             ? exporter.authorized.trim() === 'true'
             : false,
@@ -89,27 +92,27 @@ async function seedDatabase() {
     );
   }, 3000);
 
-  console.log('Creando los productos... Espere un momento.');
-  // Crear productos
-  for (const product of products) {
-    // Eliminar el número y el primer guion del nombre
-    const nameWithoutPrefix = product.name.replace(/^\d+\.\d+ - /, '');
-    // Eliminar el número y el primer guion del nombre en inglés
-    const nameEnWithoutPrefix = product.nameEn.replace(/^\d+\.\d+ - /, '');
+  // console.log('Creando los productos... Espere un momento.');
+  // // Crear productos
+  // for (const product of products) {
+  //   // Eliminar el número y el primer guion del nombre
+  //   const nameWithoutPrefix = product.name.replace(/^\d+\.\d+ - /, '');
+  //   // Eliminar el número y el primer guion del nombre en inglés
+  //   const nameEnWithoutPrefix = product.nameEn.replace(/^\d+\.\d+ - /, '');
 
-    await prisma.product.create({
-      data: {
-        code: product.code,
-        name: nameWithoutPrefix,
-        nameEn: nameEnWithoutPrefix,
-      },
-    });
-  }
-  setTimeout(async () => {
-    console.log(
-      'Productos creados con éxito, en 3 segundos se crearán las relaciones entre producto y exportador',
-    );
-  }, 3000);
+  //   await prisma.product.create({
+  //     data: {
+  //       code: product.code,
+  //       name: nameWithoutPrefix,
+  //       nameEn: nameEnWithoutPrefix,
+  //     },
+  //   });
+  // }
+  // setTimeout(async () => {
+  //   console.log(
+  //     'Productos creados con éxito, en 3 segundos se crearán las relaciones entre producto y exportador',
+  //   );
+  // }, 3000);
 
   console.log('Creando los sectores... Espere un momento.');
   // Crear productos
@@ -119,6 +122,8 @@ async function seedDatabase() {
         code: sector.code,
         name: sector.name,
         nameEn: sector.nameEn,
+        alias: sector.alias,
+        aliasEn: sector.aliasEn,
       },
     });
   }
