@@ -160,6 +160,7 @@ export class ExportController {
     @Body('search') search: string,
     @Body('selectedProduct') product: string,
     @Body('selectedSector') sector: string,
+    @Body('selectedProvince') province: string,
     @Res() res: Response,
   ) {
     try {
@@ -169,6 +170,7 @@ export class ExportController {
         search,
         product,
         sector,
+        province,
       );
       return res.status(200).json(exporters);
     } catch (error) {

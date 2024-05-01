@@ -119,6 +119,7 @@ export class ExportService {
     search?: string,
     product?: string,
     sector?: string,
+    province?: string,
   ) {
     try {
       let whereClause = {
@@ -155,6 +156,11 @@ export class ExportService {
               },
             },
           ],
+        });
+      }
+      if (province) {
+        whereClause.AND.push({
+          province: { contains: province, mode: 'insensitive' },
         });
       }
       if (sector) {
