@@ -57,6 +57,16 @@ export class SectorController {
     }
   }
 
+  @Post('/exported')
+  async sectorsExported(@Body() body: any) {
+    try {
+      const sectors = await this.sectorService.exportedSectors(body.lang);
+      return sectors;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   // Obtener un sector por code
   @Get(':code')
   async sectorByCode(@Param('code') code: string) {
