@@ -18,9 +18,9 @@ let successfulRelations = 0;
 let errors = 0;
 
 async function seedDatabase() {
-  await prisma.companyProduct.truncate();
-  await prisma.company.truncate();
-  await prisma.sector.truncate();
+  await prisma.companyProduct.deleteMany({});
+  await prisma.company.deleteMany({});
+  await prisma.sector.deleteMany({});
   console.log(
     'Creando las empresas exportadoras del directorio... Espere un momento.',
   );
