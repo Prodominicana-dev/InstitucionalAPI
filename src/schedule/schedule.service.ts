@@ -45,7 +45,10 @@ export class ScheduleService {
   // Obtener todos los schedules
   async getAll() {
     try {
-      return await this.prisma.schedule.findMany();
+      return await this.prisma.schedule.findMany({
+        take: 4,
+        orderBy: { date: 'desc' },
+      });
     } catch (error) {
       console.log(error);
       throw new Error(error);
