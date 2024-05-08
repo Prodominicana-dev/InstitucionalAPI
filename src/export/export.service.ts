@@ -56,14 +56,17 @@ export class ExportService {
           authorized: data.authorized,
           fob: data.fob,
           province: data.province,
-          product: {
-            deleteMany: {},
-            create: data.products.map((product: any) => ({
-              product: {
-                connect: { code: product },
-              },
-            })),
-          },
+          product:
+            data.products == null
+              ? {
+                  deleteMany: {},
+                  create: data.products?.map((product: any) => ({
+                    product: {
+                      connect: { code: product },
+                    },
+                  })),
+                }
+              : undefined,
           updated_At: new Date(),
           website: data.website,
         },
