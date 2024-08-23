@@ -27,8 +27,7 @@ const CryptoJS = require('crypto-js');
 
 @Controller('apiv2/gallery')
 export class GalleryController {
-  constructor(private readonly galleryService: GalleryService) {}
-  y;
+  constructor(private readonly galleryService: GalleryService) {};
 
   // Crear una galería de imágenes
 

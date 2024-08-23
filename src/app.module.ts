@@ -18,6 +18,7 @@ import { ProductModule } from './product/product.module';
 import { SectorModule } from './sector/sector.module';
 import { DocsModule } from './docs/docs.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import {MailModule} from './mail/mail.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ScheduleModule } from './schedule/schedule.module';
     SectorModule,
     DocsModule,
     ScheduleModule,
+    MailModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
