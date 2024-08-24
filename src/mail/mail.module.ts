@@ -5,7 +5,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { MailController } from './mail.controller';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
-console.log('dir',__dirname);
+// console.log('dir',__dirname);
 @Module({
   imports: [
     
