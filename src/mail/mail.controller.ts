@@ -36,16 +36,16 @@ export class MailController {
  //complait
  const descripcion = `${data.message}`;
  return this.mailService.complaint(
-   `Nos contacta ${data.name} ${data.lastName},
-    portador del correo electonico:  ${data.email} 
+   `por parte de ${data.name} ${data.lastName},
+    con el correo electrónico:  ${data.email} 
    ` ,
-   'Saludos cordiales',
+   'Se ha recibido una queja o denuncia a través del portal prodominicana.gob.do ',
    descripcion,
    `Gracias por contactarnos esta informacion sera manejada de forma confidencial `,
-   'denuncia@prodominicana.gob.do',
+   'josegarcia@prodominicana.gob.do',
  );
 }
-
+//denuncia@prodominicana.gob.do
 
 }
 
