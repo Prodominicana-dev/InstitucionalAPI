@@ -18,4 +18,16 @@ export class ComplainttDto {
     @IsString()
     @IsNotEmpty()
     message: string;
+
+    @IsString()
+    @IsNotEmpty()
+    departmen: string;
+
+    @IsString()
+    @IsNotEmpty()
+    companyName: string;
+
+    @IsString()
+    @IsNotEmpty()
+    date: string;
 }
