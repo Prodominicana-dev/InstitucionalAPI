@@ -41,23 +41,22 @@ export class MailController {
     Nombre: ${data.name} ${data.lastName},
     Correo electrónico: ${data.email},
     representante de la empresa:${data.companyName},
+    Funcionario involucrado: ${data.involvedPerson},
     fecha : ${data.date},
     
     Descripción de la queja o denuncia:
 
    ` ,
-   ` Hemos recibido una queja o denuncia a través del portal prodominicana.gob.do,área involucrada ${data.departmen}. Los detalles del remitente son los siguientes: `,
+   ` Hemos recibido una queja o denuncia a través del portal prodominicana.gob.do,área involucrada: ${data.departmen}, Los detalles del remitente son los siguientes: `,
    descripcion ,
    `Gracias por contactarnos esta informacion sera manejada de forma confidencial `,
-   'denuncia@prodominicana.gob.do',
+   'josegarcia@prodominicana.gob.do',
  );
 }
 
 }
 
-
-
-
+//denuncia@prodominicana.gob.do
 
 
 

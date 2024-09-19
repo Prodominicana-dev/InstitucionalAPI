@@ -30,4 +30,8 @@ export class ComplainttDto {
     @IsString()
     @IsNotEmpty()
     date: string;
+
+    @IsString()
+    @IsNotEmpty()
+    involvedPerson: string;
 }
