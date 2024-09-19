@@ -50,13 +50,13 @@ export class MailController {
    ` Hemos recibido una queja o denuncia a través del portal prodominicana.gob.do,área involucrada: ${data.departmen}, Los detalles del remitente son los siguientes: `,
    descripcion ,
    `Gracias por contactarnos esta informacion sera manejada de forma confidencial `,
-   'josegarcia@prodominicana.gob.do',
+   'denuncia@prodominicana.gob.do',
  );
 }
 
 }
 
-//denuncia@prodominicana.gob.do
+
 
 
 
