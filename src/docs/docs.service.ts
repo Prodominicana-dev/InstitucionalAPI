@@ -45,7 +45,11 @@ export class DocsService {
   // Obtener todos los documentos
   async getAllDocuments() {
     try {
-      return await this.prismaService.docs.findMany();
+      return await this.prismaService.docs.findMany({
+        orderBy: [
+          { date: 'desc' },
+        ],
+      });
     } catch (error) {
       console.log(error);
       throw new Error(error);
