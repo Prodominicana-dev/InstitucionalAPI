@@ -25,6 +25,7 @@ export class ExportService {
           authorized: data.authorized,
           fob: data.fob,
           province: data.province,
+          isWoman: data.isWoman,
           product: {
             create: data.products?.map((product: any) => ({
               product: {
@@ -56,6 +57,7 @@ export class ExportService {
           authorized: data.authorized,
           fob: data.fob,
           province: data.province,
+          isWoman: data.isWoman,
           product:
             data.products == null
               ? {
@@ -123,6 +125,7 @@ export class ExportService {
     product?: string,
     sector?: string,
     province?: string,
+    isWoman?: boolean
   ) {
     try {
       let whereClause = {
@@ -194,6 +197,9 @@ export class ExportService {
             },
           },
         });
+      }
+      if (isWoman) {
+        whereClause.AND.push({ isWoman });
       }
       return await paginate(
         this.prismaService.company,

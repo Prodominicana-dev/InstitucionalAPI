@@ -211,6 +211,7 @@ model Company{
   image String?
   address String?
   fob Decimal?
+  isWoman Boolean? @default(false)
   created_By String?
   updated_By String?
   created_At DateTime @default(now())

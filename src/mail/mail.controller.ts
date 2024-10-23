@@ -54,6 +54,13 @@ export class MailController {
  );
 }
 
+@Post('servicesform')
+  async servicesForm(
+    @Body() data:any
+  ){
+
+}
+
 }
 
 
