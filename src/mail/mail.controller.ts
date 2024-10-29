@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { MailService } from './mail.service';
-import {ComplainttDto} from'./dto/complaint.dto'
+import { ComplainttDto } from './dto/complaint.dto'
+import { servicesFormDto } from './dto/servicesform.dto'
 
 @Controller('apiv2/mail')
 export class MailController {
-  constructor(private mailService: MailService) {}
-  
+  constructor(private mailService: MailService) { }
+
 
   @Post(':name/:lastname/:email/:message/:activity/:identity')
   async alertaComercialMail(
@@ -31,12 +32,12 @@ export class MailController {
 
   @Post('complaint')
   async complait(
-    @Body() data:ComplainttDto
-  ){
- //complait
- const descripcion = `${data.message}`;
- return this.mailService.complaint(
-   `
+    @Body() data: ComplainttDto
+  ) {
+    //complait
+    const descripcion = `${data.message}`;
+    return this.mailService.complaint(
+      `
    
     Nombre: ${data.name} ${data.lastName},
     Correo electrónico: ${data.email},
@@ -47,19 +48,35 @@ export class MailController {
     Descripción de la queja o denuncia:
 
    ` ,
-   ` Hemos recibido una queja o denuncia a través del portal prodominicana.gob.do,área involucrada: ${data.departmen}, Los detalles del remitente son los siguientes: `,
-   descripcion ,
-   `Gracias por contactarnos esta informacion sera manejada de forma confidencial `,
-   'denuncia@prodominicana.gob.do',
- );
-}
+      ` Hemos recibido una queja o denuncia a través del portal prodominicana.gob.do,área involucrada: ${data.departmen}, Los detalles del remitente son los siguientes: `,
+      descripcion,
+      `Gracias por contactarnos esta informacion sera manejada de forma confidencial `,
+      'denuncia@prodominicana.gob.do',
+    );
+    //josegarcia@prodominicana.gob.do
+    //denuncia@prodominicana.gob.do
+  }
 
-@Post('servicesform')
+  @Post('servicesform')
   async servicesForm(
-    @Body() data:any
-  ){
+    @Body() data: servicesFormDto
+  ) {
+    console.log('klk data',data);
+    
 
-}
+    return this.mailService.serviceForm(
+      'josegarcia@prodominicana.gob.do', // toemail
+      data.name,
+      data.lastName,
+      data.message,
+      data.email,
+      data.contacto,
+      data.id,
+      data.Phone,
+
+    )
+
+  }
 
 }
 

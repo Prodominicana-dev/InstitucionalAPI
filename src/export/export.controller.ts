@@ -43,6 +43,7 @@ export class ExportController {
       body.products = products;
       // Convertir authorized a boolean
       body.authorized = body.authorized === 'true';
+      body.isWoman = body.isWoman ==='true';
       // Convertir FOB a decimal
       body.fob = parseFloat(body.fob);
       const exporter = await this.exportService.createExporter(body);
@@ -85,6 +86,7 @@ export class ExportController {
       body.products = products;
       // Convertir authorized a boolean
       body.authorized = body.authorized === 'true';
+      body.isWoman = body.isWoman ==='true';
       // Convertir FOB a decimal
       body.fob = parseFloat(body.fob);
       const exporter = await this.exportService.updateExporter(id, body);

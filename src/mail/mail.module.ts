@@ -17,7 +17,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         ignoreTLS: true,
       },
       defaults: {
-        from: 'Institucional - No Reply <no-reply@prodominicana.gob.do>',
+        from: 'Institucional-No Reply <no-reply@prodominicana.gob.do>',
       },
       template: {
         dir: join(process.cwd(), 'src', 'mail', 'templates'), 
