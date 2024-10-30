@@ -75,6 +75,9 @@ async function seedDatabase() {
           authorized: exporter.authorized
             ? exporter.authorized.trim() === 'true'
             : false,
+            isWoman: exporter.isWoman
+            ? exporter.isWoman.trim() === 'true'
+            : false,
         },
       });
     }

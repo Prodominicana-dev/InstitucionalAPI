@@ -163,6 +163,7 @@ export class ExportController {
     @Body('selectedProduct') product: string,
     @Body('selectedSector') sector: string,
     @Body('selectedProvince') province: string,
+    @Body('selectedisWoman') isWoman: string,
     @Res() res: Response,
   ) {
     try {
@@ -173,6 +174,7 @@ export class ExportController {
         product,
         sector,
         province,
+        isWoman === 'true',
       );
       return res.status(200).json(exporters);
     } catch (error) {
