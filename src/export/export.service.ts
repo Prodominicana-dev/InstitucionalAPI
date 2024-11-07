@@ -125,13 +125,15 @@ export class ExportService {
     product?: string,
     sector?: string,
     province?: string,
-    isWoman?: boolean
+    isWoman?: boolean,
+    isAuthorized?: boolean,
   ) {
     try {
-      let whereClause = {
-        authorized: true,
-        AND: [],
-      };
+      console.log('authorized', isAuthorized);
+      let whereClause: any = { AND: [] };
+      if (isAuthorized !== undefined) {
+        whereClause.authorized = isAuthorized;
+      }
       if (search) {
         whereClause.AND.push({
           OR: [
