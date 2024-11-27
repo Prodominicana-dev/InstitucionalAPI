@@ -43,7 +43,7 @@ export class ExportController {
       body.products = products;
       // Convertir authorized a boolean
       body.authorized = body.authorized === 'true';
-      body.isWoman = body.isWoman ==='true';
+      body.isWoman = body.isWoman === 'true';
       // Convertir FOB a decimal
       body.fob = parseFloat(body.fob);
       const exporter = await this.exportService.createExporter(body);
@@ -86,7 +86,7 @@ export class ExportController {
       body.products = products;
       // Convertir authorized a boolean
       body.authorized = body.authorized === 'true';
-      body.isWoman = body.isWoman ==='true';
+      body.isWoman = body.isWoman === 'true';
       // Convertir FOB a decimal
       body.fob = parseFloat(body.fob);
       const exporter = await this.exportService.updateExporter(id, body);
@@ -164,6 +164,7 @@ export class ExportController {
     @Body('selectedSector') sector: string,
     @Body('selectedProvince') province: string,
     @Body('selectedisWoman') isWoman: string,
+    @Body('isAuthorized') isAuthorized: boolean,
     @Res() res: Response,
   ) {
     try {
@@ -175,7 +176,9 @@ export class ExportController {
         sector,
         province,
         isWoman === 'true',
+        isAuthorized,
       );
+
       return res.status(200).json(exporters);
     } catch (error) {
       console.log(error);
