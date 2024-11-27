@@ -21,7 +21,7 @@ export class servicesFormDto {
 
     @IsString()
     @IsNotEmpty()
-    contacto: string;
+    contact: string;
 
     @IsString()
     @IsNotEmpty()

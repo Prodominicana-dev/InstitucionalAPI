@@ -2,6 +2,7 @@ import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { ComplainttDto } from './dto/complaint.dto'
 import { servicesFormDto } from './dto/servicesform.dto'
+import { servicesUsers } from './dto/servicesUsers.dto'
 
 @Controller('apiv2/mail')
 export class MailController {
@@ -61,16 +62,16 @@ export class MailController {
   async servicesForm(
     @Body() data: servicesFormDto
   ) {
-    console.log('klk data',data);
+    // console.log('klk data',data);
     
 
     return this.mailService.serviceForm(
-      'josegarcia@prodominicana.gob.do', // toemail
+      'servicios@prodominicana.gob.do', // toemail
       data.name,
       data.lastName,
       data.message,
       data.email,
-      data.contacto,
+      data.contact,
       data.id,
       data.Phone,
 
@@ -78,6 +79,18 @@ export class MailController {
 
   }
 
+   @Post('servicesUsers')
+    async servicesUsers(
+    @Body() email: servicesUsers
+  ){
+    console.log('data email: ',email );
+    
+    return this.mailService.servicesUser(
+      email,
+      'https://ceirdom-my.sharepoint.com/:b:/r/personal/josegarcia_prodominicana_gob_do/Documents/ORGANIGRAMA%20GENERAL%202024.pdf?csf=1&web=1&e=ZMpbR9'
+    )
+  }
+    
 }
 
 

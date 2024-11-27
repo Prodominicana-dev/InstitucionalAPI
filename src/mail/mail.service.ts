@@ -1,5 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
@@ -33,21 +34,13 @@ export class MailService {
           imageUrl: image,
         },
       });
-      console.log('Correo enviado exitosamente');
+   
     } catch (error) {
       console.error('Error al enviar el correo:', error.message || error);
     }
   }
   async serviceForm(toemail, name, lastName, message, email, contact, id, Phone) {
-    console.log('tu eres el to emmail',toemail);
-    console.log('tu eres el  name',name);
-    console.log('tu eres el  last name',lastName );
-    console.log('tu eres el  message',message);
-    console.log('tu eres el  emmail',email );
-    console.log('tu eres el contact', contact);
-    console.log('tu eres el id', id );
-    console.log('tu eres el  phone', Phone );
-    
+
     await this.mailerService.sendMail({
       to: toemail,
       subject: `Nueva aplicación de servicio via prodominicana.gob.do`,
@@ -63,4 +56,27 @@ export class MailService {
       },
     });
   }
+  
+  async servicesUser(toemail, url){
+    // console.log('toemail:', toemail);
+    // console.log('url:', url);
+    
+    await this.mailerService.sendMail({
+      to: toemail,
+      subject: `Revista enviada via prodominicana.gob.do`,
+      template: './servicesUsers',
+      context: {
+        url,
+        year: new Date().getFullYear(),
+      },
+      attachments: [
+        {
+          filename: 'prodominicana.png',
+          path: './images/prodominicana.png',
+          cid: 'logoProdominicana',
+        },
+      ],
+    });
+  }
+
 }
