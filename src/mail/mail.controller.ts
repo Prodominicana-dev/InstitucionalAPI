@@ -62,8 +62,6 @@ export class MailController {
     @Body() data: servicesFormDto
   ) {
     // console.log('klk data',data);
-
-
     return this.mailService.serviceForm(
       'servicios@prodominicana.gob.do', // toemail
       data.name,

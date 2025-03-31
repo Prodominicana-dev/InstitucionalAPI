@@ -290,4 +290,5 @@ model RatingServices{
   message String
   approved Boolean  @default(false)
   created_At DateTime @default(now())
+  updated_At DateTime? 
 }
