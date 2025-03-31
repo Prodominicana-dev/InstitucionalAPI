@@ -19,6 +19,8 @@ import { SectorModule } from './sector/sector.module';
 import { DocsModule } from './docs/docs.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import {MailModule} from './mail/mail.module';
+import { RatingServiceService } from './rating-service/rating-service.service';
+import { RatingServiceModule } from './rating-service/rating-service.module';
 
 @Module({
   imports: [
@@ -38,9 +40,10 @@ import {MailModule} from './mail/mail.module';
     SectorModule,
     DocsModule,
     ScheduleModule,
-    MailModule
+    MailModule,
+    RatingServiceModule
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService, PrismaService, RatingServiceService],
 })
 export class AppModule {}

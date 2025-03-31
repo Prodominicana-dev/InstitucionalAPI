@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>Nuevo contacto registrado</title> <!-- Título del correo -->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings xmlns:o="urn:schemas-microsoft-com:office:office">
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <style>
+    td, th, div, p, a, h1, h2, h3, h4, h5, h6 {
+      font-family: "Segoe UI", sans-serif;
+      mso-line-height-rule: exactly;
+    }
+  </style>
+  <![endif]-->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      word-break: break-word;
+      font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+    .header, .footer {
+      text-align: center;
+      padding: 2rem;
+    }
+    .header img {
+      max-width: 50%;
+      height: auto;
+    }
+    .content {
+      padding: 2rem;
+      color: #000000;
+    }
+    .content h2 {
+      font-size: 1.5rem;
+      line-height: 2rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .content img {
+      max-width: 100%;
+      height: auto;
+      margin: 1rem 0;
+      border-radius: 0.5rem;
+    }
+    .content p {
+      font-size: 1rem;
+      line-height: 1.5rem;
+      margin: 1rem 0;
+    }
+    .footer {
+      background-color: #e5e5e5;
+      color: #000000;
+    }
+    .footer img {
+      max-width: 13rem;
+      height: auto;
+    }
+    .footer p {
+      font-size: 0.75rem;
+      line-height: 1rem;
+      margin: 0.5rem 0;
+    }
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .social-links a {
+      display: inline-block;
+      padding: 0.5rem;
+      background-color: #ffffff;
+      border-radius: 50%;
+    }
+    .social-links img {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div role="article" aria-roledescription="email" aria-label="Correo electrónico">
+    <div class="container">
+      <!-- Encabezado -->
+      <div class="header">
+        <img src="https://sinim.prodominicana.gob.do/images/logo/prodominicana.png" alt="Logo de la empresa">
+      </div>
+
+      <!-- Contenido principal -->
+      <div class="content">
+        <div class="text-gray-500">Nuevo contacto registrado</div>
+        <p>Se ha registrado un nuevo contacto a través del formulario. Aquí están los detalles:</p>
+        <ul>
+          <li><strong>Nombre:</strong> {{nameF}} {{lastName}}</li>
+          <li><strong>Correo electrónico:</strong> {{email}}</li>
+          <li><strong>Cédula o RNC:</strong> {{identity}}</li>
+          <li><strong>Actividad:</strong> {{activity}}</li>
+          <li><strong>Mensaje:</strong> {{message}}</li>
+        </ul>
+        <p>Por favor, revisar esta información y realiza el seguimiento correspondiente.</p>
+      </div>
+
+      <!-- Pie de página -->
+      <div class="footer">
+        <img src="https://sinim.prodominicana.gob.do/images/logo/prodominicana.png" alt="Logo de ProDominicana">
+        <p>Centro de Exportación e Inversión de la República Dominicana</p>
+        <p>Av. 27 de Febrero esq. Av. Gregorio Luperón, Santo Domingo, República Dominicana</p>
+        <p>Tel: +1 809-530-5505</p>
+
+        <!-- Enlaces a redes sociales -->
+        <div class="social-links">
+          <a href="https://www.facebook.com/ProDominicana" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/facebook.png" alt="Facebook">
+          </a>
+          <a href="https://www.instagram.com/ProDominicana" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/instagram.png" alt="Instagram">
+          </a>
+          <a href="https://www.linkedin.com/company/ceird/" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/linkedin.png" alt="LinkedIn">
+          </a>
+          <a href="mailto:inteligenciademercados@prodominicana.gob.do" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/mail.png" alt="Correo electrónico">
+          </a>
+        </div>
+
+        <p style="font-size: 10px;">Prodominicana © 2025 Todos los derechos reservados</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

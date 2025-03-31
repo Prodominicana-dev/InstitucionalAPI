@@ -1,33 +1,33 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { ComplainttDto } from './dto/complaint.dto'
-import { servicesFormDto } from './dto/servicesform.dto'
+import { servicesFormDto, } from './dto/servicesform.dto'
 import { servicesUsers } from './dto/servicesUsers.dto'
+import { sendPageEmail } from './dto/sendPageEmail.dto'
+import { ContactDto } from './dto/contact.dto';
+
 
 @Controller('apiv2/mail')
 export class MailController {
   constructor(private mailService: MailService) { }
 
 
-  @Post(':name/:lastname/:email/:message/:activity/:identity')
-  async alertaComercialMail(
-    @Param('name') name: string,
-    @Param('lastname') lastname: string,
-    @Param('email') email: string,
-    @Param('message') message: string,
-    @Param('activity') activity: string,
-    @Param('identity') identity: string,
+  @Post('contact')
+  async contact(
+    @Body() data: ContactDto
   ) {
-    const descripcion = `${message}`;
-    return this.mailService.newAlertaComercialMail(
-      `Nos contacta ${name} ${lastname}, portador de la cedula: ${identity}
-        ${email} 
-      ` ,
-      'Saludos cordiales',
-      descripcion,
-      `el cual es un  ${activity} `,
-      'viguera27@gmail.com',
+
+    return this.mailService.contact(
+      'contact@prodominicana.gob.do',
+      data.nameF,
+      data.lastName,
+      data.message,
+      data.identity,
+      data.email,
+      data.activity
     );
+    //josegarcia@prodominicana.gob.do
+    //denuncia@prodominicana.gob.do
   }
 
 
@@ -39,7 +39,6 @@ export class MailController {
     const descripcion = `${data.message}`;
     return this.mailService.complaint(
       `
-   
     Nombre: ${data.name} ${data.lastName},
     Correo electrónico: ${data.email},
     representante de la empresa:${data.companyName},
@@ -63,7 +62,7 @@ export class MailController {
     @Body() data: servicesFormDto
   ) {
     // console.log('klk data',data);
-    
+
 
     return this.mailService.serviceForm(
       'servicios@prodominicana.gob.do', // toemail
@@ -79,18 +78,28 @@ export class MailController {
 
   }
 
-   @Post('servicesUsers')
-    async servicesUsers(
+  @Post('pageEmail')
+  async pageEmail(
+    @Body() data: sendPageEmail
+  ) {
+    console.log('Email recibido:', data.email);
+    return this.mailService.sendPageEmail(
+      data.email
+    )
+  }
+
+  @Post('servicesUsers')
+  async servicesUsers(
     @Body() email: servicesUsers
-  ){
-    console.log('data email: ',email );
-    
+  ) {
+    console.log('data email: ', email);
+
     return this.mailService.servicesUser(
       email,
       'https://ceirdom-my.sharepoint.com/:b:/r/personal/josegarcia_prodominicana_gob_do/Documents/ORGANIGRAMA%20GENERAL%202024.pdf?csf=1&web=1&e=ZMpbR9'
     )
   }
-    
+
 }
 
 

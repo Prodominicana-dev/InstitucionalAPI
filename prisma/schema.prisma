@@ -280,3 +280,14 @@ model Schedule{
   created_By String?
   updated_By String?
 }
+
+
+//Rating services
+
+model RatingServices{
+  id String @id @default(uuid())
+  score Int
+  message String
+  approved Boolean  @default(false)
+  created_At DateTime @default(now())
+}

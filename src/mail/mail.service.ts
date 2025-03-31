@@ -7,16 +7,18 @@ export class MailService {
   constructor(private mailerService: MailerService) {}
 
 //esta de debajo
-  async newAlertaComercialMail(title, type, description, image, email) {
+  async contact(toemail,nameF, lastName, message, identity, email,activity) {
     await this.mailerService.sendMail({
-      to: email,
-      subject: `ProInteligencia - Nueva alerta comercial`,
-      template: './saim',
+      to: toemail,
+      subject:`Nueva contacto registrado via prodominicana.gob.do`,
+      template: './contact',
       context: {
-        title,
-        type,
-        description,
-        imageUrl: image,
+        nameF,
+        lastName,
+        email,
+        identity,
+        activity,
+        message
       },
     });
   }
@@ -35,6 +37,27 @@ export class MailService {
         },
       });
    
+    } catch (error) {
+      console.error('Error al enviar el correo:', error.message || error);
+    }
+  }
+  async  sendPageEmail( email) {
+    try {
+      // console.log('Intentando enviar correo a:', email);
+     const result = await this.mailerService.sendMail({
+        to: email,
+        subject: `Pagina enviada vía prodominicana.gob.do`,
+        template: './sendEmailPage',
+        // context: {
+        //   title,
+        //   type,
+        //   description,
+        //   imageUrl: image,
+        // },
+      });
+        
+      // console.log('Correo aparentemente enviado:', result);
+    return result;
     } catch (error) {
       console.error('Error al enviar el correo:', error.message || error);
     }
