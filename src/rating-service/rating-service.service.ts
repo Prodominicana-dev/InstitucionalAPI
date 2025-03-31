@@ -1,64 +1,64 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+// import { Injectable } from '@nestjs/common';
+// import { PrismaService } from 'src/prisma/prisma.service';
 
-@Injectable()
-export class RatingServiceService {
-    constructor(private prismaservice: PrismaService) { }
+// @Injectable()
+// export class RatingServiceService {
+//     constructor(private prismaservice: PrismaService) { }
 
-    async CreateRating(data: any) {
-        try {
-            return await this.prismaservice.ratingServices.create(data);
+//     async CreateRating(data: any) {
+//         try {
+//             return await this.prismaservice.ratingServices.create(data);
 
-        } catch (err) {
-            console.log(err);
-            throw new Error(err);  // throw your error here
-        }
-    }
+//         } catch (err) {
+//             console.log(err);
+//             throw new Error(err);  // throw your error here
+//         }
+//     }
 
-    async UpDateRating(id: string, data: any) {
-        try {
+//     async UpDateRating(id: string, data: any) {
+//         try {
 
-            return await this.prismaservice.ratingServices.update({
-                where: { id },
-                data: {
-                    ...data,
-                },
-            })
-        } catch (error) {
+//             return await this.prismaservice.ratingServices.update({
+//                 where: { id },
+//                 data: {
+//                     ...data,
+//                 },
+//             })
+//         } catch (error) {
 
-        }
-    }
+//         }
+//     }
 
-    async DeleteRating(id: string) {
+//     async DeleteRating(id: string) {
 
-        try {
+//         try {
 
-            return await this.prismaservice.ratingServices.delete({
-                where: { id }
-            })
+//             return await this.prismaservice.ratingServices.delete({
+//                 where: { id }
+//             })
 
-        } catch (err) {
-            console.log(err);
-            throw new Error(err);  // throw your error here
+//         } catch (err) {
+//             console.log(err);
+//             throw new Error(err);  // throw your error here
 
-        }
-    }
+//         }
+//     }
 
-    async GetAllRating() {
+//     async GetAllRating() {
 
-        try {
+//         try {
 
-            return await this.prismaservice.ratingServices.findMany({
-                where: {
-                    approved: true
-                }
-            });
+//             return await this.prismaservice.ratingServices.findMany({
+//                 where: {
+//                     approved: true
+//                 }
+//             });
 
-        } catch (err) {
+//         } catch (err) {
 
-            console.log(err);
-            throw new Error(err);  // throw your error here
+//             console.log(err);
+//             throw new Error(err);  // throw your error here
 
-        }
-    }
-}
+//         }
+//     }
+// }

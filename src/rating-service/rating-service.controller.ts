@@ -1,95 +1,95 @@
-import {
-Controller,
-Body,
-Param,
-Post,
-Get,
-Patch,
-Delete,
+// import {
+// Controller,
+// Body,
+// Param,
+// Post,
+// Get,
+// Patch,
+// Delete,
 
-} from '@nestjs/common';
+// } from '@nestjs/common';
 
-import { RatingServiceService } from './rating-service.service';
-import { RatingServiceDTO } from './dto/rating-service.dto'
+// import { RatingServiceService } from './rating-service.service';
+// import { RatingServiceDTO } from './dto/rating-service.dto'
 
-@Controller('apiv2/rating-service')
-export class RatingServiceController {
-    constructor(private readonly ratingserviceservice: RatingServiceService) { }
+// @Controller('apiv2/rating-service')
+// export class RatingServiceController {
+//     constructor(private readonly ratingserviceservice: RatingServiceService) { }
 
-    @Post()
+//     @Post()
 
-    async createRating(@Body() date: RatingServiceDTO) {
+//     async createRating(@Body() date: RatingServiceDTO) {
 
-        try {
+//         try {
 
-            const rating = await this.ratingserviceservice.CreateRating(date);
+//             const rating = await this.ratingserviceservice.CreateRating(date);
 
-            return rating;
+//             return rating;
 
-        } catch (error) {
+//         } catch (error) {
 
-            console.log(error);
+//             console.log(error);
 
-            throw new Error(error);
+//             throw new Error(error);
 
-        }
+//         }
 
-    }
+//     }
 
-    @Patch(':id')
+//     @Patch(':id')
 
-    async updateRating(@Body() data:RatingServiceDTO){
+//     async updateRating(@Body() data:RatingServiceDTO){
 
-        try {
+//         try {
 
-            const rating = await this.ratingserviceservice.UpDateRating(data.id, data)
+//             const rating = await this.ratingserviceservice.UpDateRating(data.id, data)
 
-            return rating;
+//             return rating;
             
-        } catch (error) {
+//         } catch (error) {
             
-            console.log(error);
+//             console.log(error);
 
-            throw new Error(error)
+//             throw new Error(error)
             
-        }
-    }
+//         }
+//     }
 
 
-    @Delete(':id')
+//     @Delete(':id')
 
-    async deleteRating(@Param('id') id:string){
+//     async deleteRating(@Param('id') id:string){
 
-        try {
+//         try {
             
-          const rating = await this.ratingserviceservice.DeleteRating(id);
+//           const rating = await this.ratingserviceservice.DeleteRating(id);
 
-          return rating;
+//           return rating;
 
-        } catch (error) {
-            console.log(error)
+//         } catch (error) {
+//             console.log(error)
             
-            throw new Error(error)
-        }
-    }
+//             throw new Error(error)
+//         }
+//     }
 
 
-    @Get()
+//     @Get()
 
-    async getAllRating(){
+//     async getAllRating(){
 
-        try {
-             const rating = await this.ratingserviceservice.GetAllRating()
-             return rating;
+//         try {
+//              const rating = await this.ratingserviceservice.GetAllRating()
+//              return rating;
 
-        } catch (error) {
-            console.log(error);
+//         } catch (error) {
+//             console.log(error);
 
-            throw new Error(error);
+//             throw new Error(error);
             
             
-        }
-    }
+//         }
+//     }
 
 
-}
+// }
