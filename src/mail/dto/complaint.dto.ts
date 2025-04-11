@@ -33,5 +33,9 @@ export class ComplainttDto {
 
     @IsString()
     @IsNotEmpty()
+    contactCode: string;
+
+    @IsString()
+    @IsNotEmpty()
     involvedPerson: string;
 }

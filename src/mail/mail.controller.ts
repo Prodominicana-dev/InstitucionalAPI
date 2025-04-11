@@ -16,6 +16,7 @@ export class MailController {
   async contact(
     @Body() data: ContactDto
   ) {
+    // console.log('data', data);
 
     return this.mailService.contact(
       'contact@prodominicana.gob.do',
@@ -24,10 +25,11 @@ export class MailController {
       data.message,
       data.identity,
       data.email,
-      data.activity
+      data.activity,
+      data.contactCode,
     );
     //josegarcia@prodominicana.gob.do
-    //denuncia@prodominicana.gob.do
+    //contact@prodominicana.gob.do
   }
 
 
@@ -35,26 +37,21 @@ export class MailController {
   async complait(
     @Body() data: ComplainttDto
   ) {
-    //complait
-    const descripcion = `${data.message}`;
     return this.mailService.complaint(
-      `
-    Nombre: ${data.name} ${data.lastName},
-    Correo electrónico: ${data.email},
-    representante de la empresa:${data.companyName},
-    Funcionario involucrado: ${data.involvedPerson},
-    fecha : ${data.date},
+    'denuncia@prodominicana.gob.do',
+    data.name,
+    data.lastName,
+    data.email,
+    data.companyName,
+    data.departmen,
+    data.involvedPerson,
+    data.date,
+    data.contactCode,
+    data.message,
     
-    Descripción de la queja o denuncia:
-
-   ` ,
-      ` Hemos recibido una queja o denuncia a través del portal prodominicana.gob.do,área involucrada: ${data.departmen}, Los detalles del remitente son los siguientes: `,
-      descripcion,
-      `Gracias por contactarnos esta informacion sera manejada de forma confidencial `,
-      'denuncia@prodominicana.gob.do',
-    );
     //josegarcia@prodominicana.gob.do
     //denuncia@prodominicana.gob.do
+    )
   }
 
   @Post('servicesform')

@@ -7,33 +7,49 @@ export class MailService {
   constructor(private mailerService: MailerService) {}
 
 //esta de debajo
-  async contact(toemail,nameF, lastName, message, identity, email,activity) {
-    await this.mailerService.sendMail({
-      to: toemail,
-      subject:`Nueva contacto registrado via prodominicana.gob.do`,
-      template: './contact',
-      context: {
-        nameF,
-        lastName,
-        email,
-        identity,
-        activity,
-        message
-      },
-    });
+  async contact(toemail,nameF, lastName, message, identity, email,activity,contactCode) {
+    try {
+      const emailSend=  await this.mailerService.sendMail({
+        to: toemail,
+        subject:`Nueva contacto registrado via prodominicana.gob.do`,
+        template: './contact',
+        context: {
+          nameF,
+          lastName,
+          email,
+          identity,
+          activity,
+          message,
+          contactCode
+        },
+  
+      });
+      //  console.log('emailSend', emailSend);
+      return emailSend;
+      
+    } catch (error) {
+      console.error('Error al enviar el correo:', error.message || error);
+    }
+
+   
   }
 
-  async complaint(title, type, description, image, email) {
+  async complaint(toemail,name, lastName, email, companyName,departmen,involvedPerson,date, contactCode,message,) {
     try {
       await this.mailerService.sendMail({
-        to: email,
-        subject: `Nueva queja o denuncia via prodominicana.gob.do`,
+        to: toemail,
+        subject:`Nueva contacto registrado via prodominicana.gob.do`,
         template: './complaint',
         context: {
-          title,
-          type,
-          description,
-          imageUrl: image,
+          name,
+          lastName,
+          email,
+          departmen,
+          companyName,
+          message,
+          date,
+          involvedPerson,
+          contactCode
         },
       });
    
@@ -56,7 +72,7 @@ export class MailService {
         // },
       });
         
-      // console.log('Correo aparentemente enviado:', result);
+       console.log('Correo aparentemente enviado:', result);
     return result;
     } catch (error) {
       console.error('Error al enviar el correo:', error.message || error);

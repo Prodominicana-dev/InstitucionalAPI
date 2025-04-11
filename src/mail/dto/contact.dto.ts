@@ -27,4 +27,8 @@ export class ContactDto {
     @IsNotEmpty()
     activity: string;
 
+    @IsString()
+    @IsNotEmpty()
+    contactCode: string;
+
 }
