@@ -1,17 +1,18 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import { log } from 'console';
 import nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
-  constructor(private mailerService: MailerService) {}
+  constructor(private mailerService: MailerService) { }
 
-//esta de debajo
-  async contact(toemail,nameF, lastName, message, identity, email,activity,contactCode) {
+  //esta de debajo
+  async contact(toemail, nameF, lastName, message, identity, email, activity, contactCode) {
     try {
-      const emailSend=  await this.mailerService.sendMail({
+      const emailSend = await this.mailerService.sendMail({
         to: toemail,
-        subject:`Nueva contacto registrado via prodominicana.gob.do`,
+        subject: `Nueva contacto registrado via prodominicana.gob.do`,
         template: './contact',
         context: {
           nameF,
@@ -22,23 +23,23 @@ export class MailService {
           message,
           contactCode
         },
-  
+
       });
       //  console.log('emailSend', emailSend);
       return emailSend;
-      
+
     } catch (error) {
       console.error('Error al enviar el correo:', error.message || error);
     }
 
-   
+
   }
 
-  async complaint(toemail,name, lastName, email, companyName,departmen,involvedPerson,date, contactCode,message,) {
+  async complaint(toemail, name, lastName, email, companyName, departmen, involvedPerson, date, contactCode, message,) {
     try {
       await this.mailerService.sendMail({
         to: toemail,
-        subject:`Nueva contacto registrado via prodominicana.gob.do`,
+        subject: `Nueva contacto registrado via prodominicana.gob.do`,
         template: './complaint',
         context: {
           name,
@@ -52,15 +53,15 @@ export class MailService {
           contactCode
         },
       });
-   
+
     } catch (error) {
       console.error('Error al enviar el correo:', error.message || error);
     }
   }
-  async  sendPageEmail( email) {
+  async sendPageEmail(email) {
     try {
       // console.log('Intentando enviar correo a:', email);
-     const result = await this.mailerService.sendMail({
+      const result = await this.mailerService.sendMail({
         to: email,
         subject: `Pagina enviada vía prodominicana.gob.do`,
         template: './sendEmailPage',
@@ -71,35 +72,44 @@ export class MailService {
         //   imageUrl: image,
         // },
       });
-        
-       console.log('Correo aparentemente enviado:', result);
-    return result;
+
+      // console.log('Correo aparentemente enviado:', result);
+      return result;
     } catch (error) {
       console.error('Error al enviar el correo:', error.message || error);
     }
   }
   async serviceForm(toemail, name, lastName, message, email, contact, id, Phone) {
+  console.log('toemail:', toemail);
+    try {
 
-    await this.mailerService.sendMail({
-      to: toemail,
-      subject: `Nueva aplicación de servicio via prodominicana.gob.do`,
-      template: './servicesForm',
-      context: {
-        name,
-        lastName,
-        email,
-        message,
-        contact,
-        Phone,
-        id
-      },
-    });
+      const result = await this.mailerService.sendMail({
+        to: toemail,
+        subject: `Nueva aplicación de servicio via prodominicana.gob.do`,
+        template: './servicesForm',
+        context: {
+          name,
+          lastName,
+          email,
+          message,
+          contact,
+          Phone,
+          id
+        },
+      });
+
+      // console.log('Correo enviado:', result);
+
+      return result;
+    } catch (error) {
+      console.error('Error al enviar el correo:', error.message || error);
+    }
   }
-  
-  async servicesUser(toemail, url){
+
+  async servicesUser(toemail, url) {
     // console.log('toemail:', toemail);
     // console.log('url:', url);
-    
+
     await this.mailerService.sendMail({
       to: toemail,
       subject: `Revista enviada via prodominicana.gob.do`,

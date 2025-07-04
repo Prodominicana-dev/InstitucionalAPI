@@ -58,8 +58,10 @@ export class MailController {
   async servicesForm(
     @Body() data: servicesFormDto
   ) {
-    // console.log('klk data',data);
+     console.log('klk data',data);
     return this.mailService.serviceForm(
+      //josegarcia@prodominicana.gob.do
+      //servicios@prodominicana.gob.do
       'servicios@prodominicana.gob.do', // toemail
       data.name,
       data.lastName,

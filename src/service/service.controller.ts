@@ -158,7 +158,7 @@ export class ServiceController {
     @UploadedFiles() images: any,
   ) {
     try {
-      console.log(data);
+      // console.log(data);
       const result = await this.serviceService.createService(data);
       if (!images) return res.status(201).json(result);
       await images.forEach(async (file) => {

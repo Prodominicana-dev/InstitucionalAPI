@@ -42,13 +42,13 @@ export class SubsectionController {
   async update(@Param('id') id: string, @Body() body, @Res() res) {
     try {
       const _id = res.req.headers.authorization;
-      console.log(id);
+      // console.log(id);
       const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      console.log(idDecrypted);
+      // console.log(idDecrypted);
       const auth0Token = await validateUser(idDecrypted, 'update:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      console.log('body', body);
+      // console.log('body', body);
       const subsection = await this.subsectionService.update(id, body);
       return res.status(200).json({ subsection });
     } catch (error) {
@@ -61,10 +61,10 @@ export class SubsectionController {
   async enable(@Param('id') id: string, @Res() res) {
     try {
       const _id = res.req.headers.authorization;
-      console.log(id);
+      // console.log(id);
       const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      console.log(idDecrypted);
+      // console.log(idDecrypted);
       const auth0Token = await validateUser(idDecrypted, 'update:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const subsection = await this.subsectionService.enable(id);
@@ -79,10 +79,10 @@ export class SubsectionController {
   async disable(@Param('id') id: string, @Res() res) {
     try {
       const _id = res.req.headers.authorization;
-      console.log(id);
+      // console.log(id);
       const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      console.log(idDecrypted);
+      // console.log(idDecrypted);
       const auth0Token = await validateUser(idDecrypted, 'update:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const subsection = await this.subsectionService.disable(id);
@@ -97,14 +97,14 @@ export class SubsectionController {
   async getById(@Param('id') id: string, @Res() res) {
     try {
       // const _id = res.req.headers.authorization;
-      console.log(id);
+      // console.log(id);
       // const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
       // const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
       // console.log(idDecrypted);
       // const auth0Token = await validateUser(idDecrypted, 'read:transparency');
       // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const subsection = await this.subsectionService.getById(id);
-      console.log(subsection);
+      // console.log(subsection);
       return res.status(200).json(subsection);
     } catch (error) {
       return res.status(404).json({ error });
@@ -163,7 +163,7 @@ export class SubsectionController {
       const _id = res.req.headers.authorization;
       const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      console.log(idDecrypted);
+      // console.log(idDecrypted);
       const auth0Token = await validateUser(idDecrypted, 'delete:transparency');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const subsection = await this.subsectionService.getById(id);

@@ -41,7 +41,7 @@ async function seedDatabase() {
     }
   });
 
-  console.log('Empresas con el mismo RNC:', companiesWithSameRNC);
+  // console.log('Empresas con el mismo RNC:', companiesWithSameRNC);
   console.log(
     'Cantidad de empresas con el mismo RNC:',
     companiesWithSameRNC.length,
