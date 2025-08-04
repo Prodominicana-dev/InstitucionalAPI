@@ -58,7 +58,7 @@ export class MailController {
   async servicesForm(
     @Body() data: servicesFormDto
   ) {
-     console.log('klk data',data);
+    //  console.log('klk data',data);
     return this.mailService.serviceForm(
       //josegarcia@prodominicana.gob.do
       //servicios@prodominicana.gob.do
@@ -70,6 +70,7 @@ export class MailController {
       data.contact,
       data.id,
       data.Phone,
+      data.contactCode
 
     )
 
@@ -79,7 +80,7 @@ export class MailController {
   async pageEmail(
     @Body() data: sendPageEmail
   ) {
-    console.log('Email recibido:', data.email);
+    // console.log('Email recibido:', data.email);
     return this.mailService.sendPageEmail(
       data.email
     )
@@ -89,7 +90,7 @@ export class MailController {
   async servicesUsers(
     @Body() email: servicesUsers
   ) {
-    console.log('data email: ', email);
+    // console.log('data email: ', email);
 
     return this.mailService.servicesUser(
       email,

@@ -79,7 +79,7 @@ export class MailService {
       console.error('Error al enviar el correo:', error.message || error);
     }
   }
-  async serviceForm(toemail, name, lastName, message, email, contact, id, Phone) {
+  async serviceForm(toemail, name, lastName, message, email, contact, id, Phone,contactCode) {
   console.log('toemail:', toemail);
     try {
 
@@ -94,6 +94,7 @@ export class MailService {
           message,
           contact,
           Phone,
+          contactCode,
           id
         },
       });

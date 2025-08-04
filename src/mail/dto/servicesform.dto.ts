@@ -29,8 +29,12 @@ export class servicesFormDto {
 
     @IsString()
     @IsNotEmpty()
-    id: string;
-    
+    contactCode: string;
 
-   
+    @IsString()
+    @IsNotEmpty()
+    id: string;
+
+
+
 }
