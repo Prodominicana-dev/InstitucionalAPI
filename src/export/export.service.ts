@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { paginator } from '@nodeteam/nestjs-prisma-pagination';
 import { PaginatorTypes } from '@nodeteam/nestjs-prisma-pagination';
@@ -10,10 +10,22 @@ const paginate: PaginatorTypes.PaginateFunction = paginator({
 
 @Injectable()
 export class ExportService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: PrismaService) { }
 
   // Crear un nuevo exportador
   async createExporter(data: any) {
+
+    const existingExporter = await this.prismaService.company.findUnique({
+      where: { rnc: data.rnc },
+    });
+
+
+    if (existingExporter) {
+      throw new ConflictException('Exportador con este RNC ya existe');
+    }
+
+    // console.log('Creating exporter with data:', data);
+
     try {
       return await this.prismaService.company.create({
         data: {
@@ -59,15 +71,15 @@ export class ExportService {
           province: data.province,
           isWoman: data.isWoman,
           product:
-            data.products == null
+            data.products != null
               ? {
-                  deleteMany: {},
-                  create: data.products?.map((product: any) => ({
-                    product: {
-                      connect: { code: product },
-                    },
-                  })),
-                }
+                deleteMany: {},
+                create: data.products.map((product: any) => ({
+                  product: {
+                    connect: { code: product },
+                  },
+                })),
+              }
               : undefined,
           updated_At: new Date(),
           website: data.website,
@@ -129,11 +141,21 @@ export class ExportService {
     isAuthorized?: boolean,
   ) {
     try {
-      console.log('authorized', isAuthorized);
+      // console.log('authorized', isAuthorized);
+      // console.log('--- START EXPORTERS PAGINATE ---');
+      // console.log('Search input:', search);
+      // console.log('Product filter input:', product);
+      // console.log('Sector filter input:', sector);
+      // console.log('Province filter input:', province);
+      // console.log('IsWoman filter input:', isWoman);
+      // console.log('IsAuthorized filter input:', isAuthorized);
       let whereClause: any = { AND: [] };
+
+    
       if (isAuthorized !== undefined) {
-        whereClause.authorized = isAuthorized;
+        whereClause.AND.push({ authorized: isAuthorized });
       }
+
       if (search) {
         whereClause.AND.push({
           OR: [
@@ -142,45 +164,45 @@ export class ExportService {
             {
               product: {
                 some: {
-                  product: {
-                    OR: [
-                      { code: { contains: search, mode: 'insensitive' } },
-                      { alias: { contains: search, mode: 'insensitive' } },
-                      { aliasEn: { contains: search, mode: 'insensitive' } },
-                      { name: { contains: search, mode: 'insensitive' } },
-                      { nameEn: { contains: search, mode: 'insensitive' } },
-                    ],
-                  },
-                  sector: {
-                    OR: [
-                      { code: { contains: search, mode: 'insensitive' } },
-                      { alias: { contains: search, mode: 'insensitive' } },
-                      { aliasEn: { contains: search, mode: 'insensitive' } },
-                      { name: { contains: search, mode: 'insensitive' } },
-                      { nameEn: { contains: search, mode: 'insensitive' } },
-                    ],
-                  },
+                  OR: [
+                    { product: { code: { contains: search, mode: 'insensitive' } } },
+                    { product: { alias: { contains: search, mode: 'insensitive' } } },
+                    { product: { aliasEn: { contains: search, mode: 'insensitive' } } },
+                    { product: { name: { contains: search, mode: 'insensitive' } } },
+                    { product: { nameEn: { contains: search, mode: 'insensitive' } } },
+
+                    
+                    { sector: { code: { contains: search, mode: 'insensitive' } } },
+                    { sector: { alias: { contains: search, mode: 'insensitive' } } },
+                    { sector: { aliasEn: { contains: search, mode: 'insensitive' } } },
+                    { sector: { name: { contains: search, mode: 'insensitive' } } },
+                    { sector: { nameEn: { contains: search, mode: 'insensitive' } } },
+                  ],
                 },
               },
             },
           ],
         });
       }
+
+    
       if (province) {
         whereClause.AND.push({
           province: { contains: province, mode: 'insensitive' },
         });
       }
+
       if (sector) {
         whereClause.AND.push({
           product: {
             some: {
-              sector: {
-                OR: [
-                  { alias: { contains: sector, mode: 'insensitive' } },
-                  { aliasEn: { contains: sector, mode: 'insensitive' } },
-                ],
-              },
+              OR: [
+                { sector: { alias: { contains: sector, mode: 'insensitive' } } },
+                { sector: { aliasEn: { contains: sector, mode: 'insensitive' } } },
+                { sector: { name: { contains: sector, mode: 'insensitive' } } },
+                { sector: { nameEn: { contains: sector, mode: 'insensitive' } } },
+                { sector: { code: { contains: sector, mode: 'insensitive' } } },
+              ],
             },
           },
         });
@@ -190,19 +212,29 @@ export class ExportService {
         whereClause.AND.push({
           product: {
             some: {
-              product: {
-                OR: [
-                  { alias: { contains: product, mode: 'insensitive' } },
-                  { aliasEn: { contains: product, mode: 'insensitive' } },
-                ],
-              },
+              OR: [
+                { product: { alias: { contains: product, mode: 'insensitive' } } },
+                { product: { aliasEn: { contains: product, mode: 'insensitive' } } },
+                { product: { name: { contains: product, mode: 'insensitive' } } },
+                { product: { nameEn: { contains: product, mode: 'insensitive' } } },
+                { product: { code: { contains: product, mode: 'insensitive' } } },
+              ],
             },
           },
         });
       }
+
       if (isWoman) {
         whereClause.AND.push({ isWoman });
       }
+
+      
+      if (whereClause.AND && whereClause.AND.length === 0) {
+        delete whereClause.AND;
+      }
+
+      // console.log('whereClause', JSON.stringify(whereClause, null, 2));
+
       return await paginate(
         this.prismaService.company,
         {
@@ -214,9 +246,10 @@ export class ExportService {
       );
     } catch (error) {
       console.log(error);
-      throw new Error(error);
+      throw error; 
     }
   }
+
 
   // // Search for exporters by name, rnc, or product
   // async searchExporters(search: string) {

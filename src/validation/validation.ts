@@ -13,6 +13,8 @@ export async function generateToken() {
         audience: `${process.env.API_IDENTIFIER}`,
       }),
     };
+    // console.log('Generating token with options:', options);
+    
     const { data } = await axios.request(options);
     return data.access_token;
   } catch (error) {
