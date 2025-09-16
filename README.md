@@ -22,52 +22,80 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# InstitucionalAPI
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+</p>
 
-## Installation
+<p align="center">
+  <b>API institucional para consultas económicas y comerciales</b><br>
+  Basada en <a href="http://nodejs.org" target="_blank">Node.js</a> y <a href="https://nestjs.com/" target="_blank">NestJS</a>.
+</p>
+
+---
+
+## Descripción
+
+InstitucionalAPI es una aplicación backend desarrollada con NestJS y TypeScript. Permite consultar datos económicos y comerciales, como inversión extranjera directa y exportaciones, desde diferentes fuentes de datos SQL.
+
+## Características
+
+- Consulta de inversión extranjera directa por país, sector y año.
+- Consulta de exportaciones por país y producto.
+- Respuestas en formato HTML listas para integración con chatbots o aplicaciones web.
+- Integración con múltiples bases de datos usando TypeORM.
+
+## Instalación
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Running the app
+## Ejecución
 
 ```bash
-# development
-$ npm run start
+# Desarrollo
+npm run start
 
-# watch mode
-$ npm run start:dev
+# Modo watch
+npm run start:dev
 
-# production mode
-$ npm run start:prod
+# Producción
+npm run start:prod
 ```
 
-## Test
+## Pruebas
 
 ```bash
-# unit tests
-$ npm run test
+# Pruebas unitarias
+npm run test
 
-# e2e tests
-$ npm run test:e2e
+# Pruebas end-to-end
+npm run test:e2e
 
-# test coverage
-$ npm run test:cov
+# Cobertura de pruebas
+npm run test:cov
 ```
 
-## Support
+## Variables de entorno
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Este proyecto utiliza variables de entorno para la configuración de las conexiones a bases de datos y otros parámetros sensibles.  
+**Asegúrate de definir tus variables de entorno de forma segura y nunca compartirlas públicamente ni subirlas al repositorio.**
 
-## Stay in touch
+## Endpoints principales
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- `/chatbot/ied-country` — IED por país y año
+- `/chatbot/ied-sector` — IED por sector y año
+- `/chatbot/exports-country` — Exportaciones por país y año
+- `/chatbot/exports-product` — Exportaciones por producto y año
 
-## License
+## Soporte y contacto
 
-Nest is [MIT licensed](LICENSE).
+- Autor: ProDominicana
+- Website: [https://nestjs.com](https://nestjs.com/)
+- Twitter: [@nestframework](https://twitter.com/nestframework)
+
+## Licencia
+
+MIT
