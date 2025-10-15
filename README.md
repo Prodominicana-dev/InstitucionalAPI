@@ -22,52 +22,70 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Installation
+## Descripción
 
-```bash
-$ npm install
-```
+InstitucionalAPI es una aplicación backend desarrollada con NestJS y TypeScript. Permite consultar datos económicos y comerciales, como inversión extranjera directa y exportaciones, desde diferentes fuentes de datos SQL.
 
-## Running the app
+## Características
 
-```bash
-# development
-$ npm run start
+- Consulta de inversión extranjera directa por país, sector y año.
+- Consulta de exportaciones por país y producto.
+- Respuestas en formato HTML listas para integración con chatbots o aplicaciones web.
+- Integración con múltiples bases de datos usando TypeORM.
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Test
+## Instalación
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Support
+## Ejecución
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Desarrollo
+npm run start
 
-## Stay in touch
+# Modo watch
+npm run start:dev
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Producción
+npm run start:prod
+```
 
-## License
+## Pruebas
 
-Nest is [MIT licensed](LICENSE).
+```bash
+# Pruebas unitarias
+npm run test
+
+# Pruebas end-to-end
+npm run test:e2e
+
+# Cobertura de pruebas
+npm run test:cov
+```
+
+## Variables de entorno
+
+Este proyecto utiliza variables de entorno para la configuración de las conexiones a bases de datos y otros parámetros sensibles.  
+**Asegúrate de definir tus variables de entorno de forma segura y nunca compartirlas públicamente ni subirlas al repositorio.**
+
+## Endpoints principales
+
+- `/chatbot/ied-country` — IED por país y año
+- `/chatbot/ied-sector` — IED por sector y año
+- `/chatbot/exports-country` — Exportaciones por país y año
+- `/chatbot/exports-product` — Exportaciones por producto y año
+
+## Soporte y contacto
+
+- Autor: ProDominicana
+- Website: [https://nestjs.com](https://nestjs.com/)
+- Twitter: [@nestframework](https://twitter.com/nestframework)
+
+## Licencia
+
+MIT
