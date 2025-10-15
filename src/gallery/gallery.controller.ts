@@ -27,7 +27,7 @@ const CryptoJS = require('crypto-js');
 
 @Controller('apiv2/gallery')
 export class GalleryController {
-  constructor(private readonly galleryService: GalleryService) {};
+  constructor(private readonly galleryService: GalleryService) { };
 
   // Crear una galería de imágenes
 
@@ -39,46 +39,37 @@ export class GalleryController {
     @Res() res: Response,
   ) {
     try {
-      // const id = res.req.headers.authorization;
-      // const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      // const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      // const auth0Token = await validateUser(idDecrypted, 'create:news');
-      // if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const gallery = await this.galleryService.create(body);
-      if (files) {
-        files.forEach(async (file, index) => {
-          const pathFolder = path.join(
-            process.cwd(),
-            `/public/gallery/${gallery.id}`,
-          );
-          if (!fs.existsSync(pathFolder)) {
-            fs.mkdirSync(pathFolder, { recursive: true });
-          }
-          const fileName = `${index}_${new Date().getTime()}.${mime.extension(file.mimetype)}`;
-          if (file.originalname !== gallery.cover) {
-            const data: PhotoDto = {
-              name: fileName,
-              galleryId: gallery.id,
-              size: file.size.toString(),
-              created_By: body.created_By,
-            };
-            const photo = await this.galleryService.createPhoto(data);
-            if (photo)
-              await fs.writeFileSync(
-                path.join(pathFolder, fileName),
-                file.buffer,
-              );
-          } else {
-            await fs.writeFileSync(
-              path.join(pathFolder, fileName),
-              file.buffer,
-            );
-            await this.galleryService.update(gallery.id, {
-              cover: fileName,
-            });
-          }
-        });
+
+      if (files && files.length > 0) {
+        const pathFolder = path.join(process.cwd(), `/public/gallery/${gallery.id}`);
+        if (!fs.existsSync(pathFolder)) {
+          fs.mkdirSync(pathFolder, { recursive: true });
+        }
+
+        await Promise.all(
+          files.map(async (file, index) => {
+            const fileName = `${index}_${Date.now()}.${mime.extension(file.mimetype)}`;
+            const filePath = path.join(pathFolder, fileName);
+
+            await fs.writeFileSync(filePath, file.buffer);
+
+            if (file.originalname === gallery.cover) {
+              // Guardar cover
+              await this.galleryService.update(gallery.id, { cover: fileName });
+            } else {
+              
+              await this.galleryService.createPhoto({
+                name: fileName,
+                galleryId: gallery.id,
+                size: file.size.toString(),
+                created_By: body.created_By,
+              });
+            }
+          }),
+        );
       }
+
       return res.status(201).json({ message: 'Gallery created' });
     } catch (error) {
       console.log(error);
@@ -86,7 +77,7 @@ export class GalleryController {
     }
   }
 
-  // Editar una gallery
+
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('images'))
   async updateGalleryImage(
