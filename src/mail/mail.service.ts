@@ -129,4 +129,41 @@ export class MailService {
     });
   }
 
+  async newFeedbackNotification(
+    toemail: string,
+    name: string,
+    email: string,
+    message: string,
+    feedbackCode: string,
+    rating?: number,
+    serviceType?: string,
+    dashboardUrl?: string,
+  ) {
+    try {
+      const result = await this.mailerService.sendMail({
+        to: toemail,
+        subject: `Nuevo feedback recibido vía prodominicana.gob.do`,
+        template: './newFeedback',
+        context: {
+          name,
+          email,
+          message,
+          feedbackCode,
+          rating,
+          serviceType,
+          dashboardUrl: dashboardUrl || 'https://prodominicana.gob.do/admin/feedback',
+          createdAt: new Date().toLocaleString('es-DO', {
+            dateStyle: 'full',
+            timeStyle: 'short',
+          }),
+          year: new Date().getFullYear(),
+        },
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Error al enviar el correo de feedback:', error.message || error);
+    }
+  }
+
 }

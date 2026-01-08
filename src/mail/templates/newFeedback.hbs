@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>Nuevo feedback recibido</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings xmlns:o="urn:schemas-microsoft-com:office:office">
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <style>
+    td, th, div, p, a, h1, h2, h3, h4, h5, h6 {
+      font-family: "Segoe UI", sans-serif;
+      mso-line-height-rule: exactly;
+    }
+  </style>
+  <![endif]-->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      word-break: break-word;
+      font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+    .header, .footer {
+      text-align: center;
+      padding: 2rem;
+    }
+    .header img {
+      max-width: 50%;
+      height: auto;
+    }
+    .content {
+      padding: 2rem;
+      background-color: #f9fafb;
+    }
+    .info-row {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background-color: #ffffff;
+      border-radius: 0.5rem;
+    }
+    .label {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.25rem;
+    }
+    .value {
+      color: #6b7280;
+    }
+    .rating {
+      color: #f59e0b;
+      font-size: 1.25rem;
+    }
+    .footer {
+      background-color: #1f2937;
+      color: #ffffff;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: #2563eb;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <img src="https://prodominicana.gob.do/images/logo.png" alt="ProDominicana">
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <h1 style="color: #1f2937; margin-bottom: 1rem;">Nuevo Feedback Recibido</h1>
+      <p style="color: #6b7280; margin-bottom: 2rem;">Se ha recibido un nuevo feedback que requiere revisión.</p>
+
+      <!-- Código de Feedback -->
+      <div class="info-row">
+        <div class="label">Código de Feedback:</div>
+        <div class="value">{{feedbackCode}}</div>
+      </div>
+
+      <!-- Nombre -->
+      <div class="info-row">
+        <div class="label">Nombre:</div>
+        <div class="value">{{name}}</div>
+      </div>
+
+      <!-- Email -->
+      <div class="info-row">
+        <div class="label">Correo Electrónico:</div>
+        <div class="value">{{email}}</div>
+      </div>
+
+      {{#if serviceType}}
+      <!-- Tipo de Servicio -->
+      <div class="info-row">
+        <div class="label">Tipo de Servicio:</div>
+        <div class="value">{{serviceType}}</div>
+      </div>
+      {{/if}}
+
+      {{#if rating}}
+      <!-- Calificación -->
+      <div class="info-row">
+        <div class="label">Calificación:</div>
+        <div class="rating">{{rating}} ⭐</div>
+      </div>
+      {{/if}}
+
+      <!-- Mensaje -->
+      <div class="info-row">
+        <div class="label">Mensaje:</div>
+        <div class="value" style="white-space: pre-wrap;">{{message}}</div>
+      </div>
+
+      <!-- Fecha -->
+      <div class="info-row">
+        <div class="label">Fecha de Recepción:</div>
+        <div class="value">{{createdAt}}</div>
+      </div>
+
+      <p style="text-align: center;">
+        <a href="{{dashboardUrl}}" class="btn">Ver en el Panel de Administración</a>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p style="margin: 0;">© {{year}} ProDominicana. Todos los derechos reservados.</p>
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: #9ca3af;">
+        Este es un correo automático, por favor no responder.
+      </p>
+    </div>
+  </div>
+</body>
+</html>

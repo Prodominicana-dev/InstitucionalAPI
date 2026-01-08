@@ -19,12 +19,14 @@ import { SectorModule } from './sector/sector.module';
 import { DocsModule } from './docs/docs.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import {MailModule} from './mail/mail.module';
+import { FeedbackModule } from './feeback/feeback.module';
 // import { RatingServiceService } from './rating-service/rating-service.service';
 // import { RatingServiceModule } from './rating-service/rating-service.module';
 
 @Module({
   imports: [
     SectionModule,
+    FeedbackModule,
     SubsectionModule,
     DocumentsModule,
     NewsModule,

@@ -12,255 +12,252 @@ datasource db {
 
 // Transparencia 
 
-model Section{
-  id String @id @default(uuid())
-  name String
-  type String? 
+model Section {
+  id          String       @id @default(uuid())
+  name        String
+  type        String?
   description String?
-  priority Int? @default(1)
-  status Boolean? @default(true)
-  url String?
-  subsection Subsection[]
-  documents Documents[]
+  priority    Int?         @default(1)
+  status      Boolean?     @default(true)
+  url         String?
+  subsection  Subsection[]
+  documents   Documents[]
 }
 
-model Subsection{
-  id String @id @default(uuid())
-  name String
-  type String? 
+model Subsection {
+  id          String      @id @default(uuid())
+  name        String
+  type        String?
   description String?
-  priority Int? @default(1)
-  status Boolean? @default(true)
-  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  sectionId String
-  documents Documents[]
-  url String?
+  priority    Int?        @default(1)
+  status      Boolean?    @default(true)
+  section     Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sectionId   String
+  documents   Documents[]
+  url         String?
 }
-
 
 // Documentos de transparencia
-model Documents{
-  id String @id @default(uuid())
-  title String?
-  name String?
-  path String?
-  date DateTime? @default(now())
-  size String?
-  createdAt DateTime @default(now())
-  subsection Subsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+model Documents {
+  id           String      @id @default(uuid())
+  title        String?
+  name         String?
+  path         String?
+  date         DateTime?   @default(now())
+  size         String?
+  createdAt    DateTime    @default(now())
+  subsection   Subsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   subsectionId String?
-  section Section? @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  sectionId String?
-  url String?
-
+  section      Section?    @relation(fields: [sectionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sectionId    String?
+  url          String?
 }
 
 // Institución
 
-model News{
-  id String @id @default(uuid())
-  cover String?
-  images String[]
-  metadata Json[]
-  date DateTime? @default(now())
-  created_At DateTime? @default(now())
+model News {
+  id         String       @id @default(uuid())
+  cover      String?
+  images     String[]
+  metadata   Json[]
+  date       DateTime?    @default(now())
+  created_At DateTime?    @default(now())
   updated_At DateTime?
-  status Boolean? @default(true)
-  category NewsCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  status     Boolean?     @default(true)
+  category   NewsCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   categoryId String
   created_By String?
   updated_By String?
 }
 
-model NewsCategory{
-  id String @id @default(uuid())
-  nameEs String @unique
-  nameEn String @unique
-  news News[]
+model NewsCategory {
+  id         String    @id @default(uuid())
+  nameEs     String    @unique
+  nameEn     String    @unique
+  news       News[]
   created_At DateTime? @default(now())
-  updated_At DateTime? 
-  status Boolean? @default(true)
+  updated_At DateTime?
+  status     Boolean?  @default(true)
   created_By String?
   updated_By String?
 }
 
-model Event{
-  id String @id @default(uuid())
-  metadata Json[]
-  image String?
+model Event {
+  id         String         @id @default(uuid())
+  metadata   Json[]
+  image      String?
   start_Date DateTime?
-  end_Date DateTime?
-  lat String? // Latitude
-  lng String? // Longitude
-  address String?
-  created_At DateTime? @default(now())
-  updated_At DateTime? 
-  status Boolean? @default(true)
+  end_Date   DateTime?
+  lat        String? // Latitude
+  lng        String? // Longitude
+  address    String?
+  created_At DateTime?      @default(now())
+  updated_At DateTime?
+  status     Boolean?       @default(true)
   created_By String?
   updated_By String?
-  category EventCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  category   EventCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   categoryId String?
 }
 
-model EventCategory{
-  id String @id @default(uuid())
-  name String 
-  email String
+model EventCategory {
+  id         String    @id @default(uuid())
+  name       String
+  email      String
   created_At DateTime? @default(now())
-  updated_At DateTime? 
-  status Boolean? @default(true)
+  updated_At DateTime?
+  status     Boolean?  @default(true)
   created_By String?
   updated_By String?
-  event Event[]
+  event      Event[]
 }
 
-model Gallery{
-  id String @id @default(uuid())
-  title String @unique
-  titleEn String @unique
-  cover String?
-  date DateTime? @default(now())
+model Gallery {
+  id         String    @id @default(uuid())
+  title      String    @unique
+  titleEn    String    @unique
+  cover      String?
+  date       DateTime? @default(now())
   created_At DateTime? @default(now())
-  updated_At DateTime? 
+  updated_At DateTime?
   created_By String?
   updated_By String?
-  status Boolean? @default(true)
-  photo Photo[]
+  status     Boolean?  @default(true)
+  photo      Photo[]
 }
 
-model Photo{
-  id String @id @default(uuid())
-  size String?
-  name String?
+model Photo {
+  id         String    @id @default(uuid())
+  size       String?
+  name       String?
   created_At DateTime? @default(now())
-  updated_At DateTime? 
-  gallery Gallery? @relation(fields: [galleryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  galleryId String
+  updated_At DateTime?
+  gallery    Gallery?  @relation(fields: [galleryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  galleryId  String
   created_By String?
   updated_By String?
 }
 
-model Member{
-  id String @id @default(uuid())
-  name String
-  metadata Json[]
-  isDirector Boolean? @default(false)
-  image String?
+model Member {
+  id           String      @id @default(uuid())
+  name         String
+  metadata     Json[]
+  isDirector   Boolean?    @default(false)
+  image        String?
   departmentId String?
-  department Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  created_At DateTime? @default(now())
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  created_At   DateTime?   @default(now())
 }
 
-model Department{
-  id String @id @default(uuid())
-  nameEs String @unique
-  nameEn String @unique
+model Department {
+  id                      String    @id @default(uuid())
+  nameEs                  String    @unique
+  nameEn                  String    @unique
   structureOrganizational Member[]
-  created_At DateTime? @default(now())
+  created_At              DateTime? @default(now())
 }
 
-
-model Service{
-  id String @id @default(uuid())
-  metadata Json[]
-  image String?
-  created_At DateTime? @default(now())
-  updated_At DateTime? 
-  status Boolean? @default(true)
+model Service {
+  id         String           @id @default(uuid())
+  metadata   Json[]
+  image      String?
+  created_At DateTime?        @default(now())
+  updated_At DateTime?
+  status     Boolean?         @default(true)
   created_By String?
   updated_By String?
-  category ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  category   ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   categoryId String?
-  type ServiceType? @relation(fields: [typeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  typeId String?
+  type       ServiceType?     @relation(fields: [typeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  typeId     String?
 }
 
-model ServiceCategory{
-  id String @id @default(uuid())
-  name String
+model ServiceCategory {
+  id         String    @id @default(uuid())
+  name       String
   created_At DateTime? @default(now())
-  updated_At DateTime? 
-  status Boolean? @default(true)
+  updated_At DateTime?
+  status     Boolean?  @default(true)
   created_By String?
   updated_By String?
-  service Service[]
+  service    Service[]
 }
 
-model ServiceType{
-  id String @id @default(uuid())
-  nameEs String
-  nameEn String
+model ServiceType {
+  id         String    @id @default(uuid())
+  nameEs     String
+  nameEn     String
   created_At DateTime? @default(now())
-  updated_At DateTime? 
-  status Boolean? @default(true)
+  updated_At DateTime?
+  status     Boolean?  @default(true)
   created_By String?
   updated_By String?
-  service Service[]
+  service    Service[]
 }
-
 
 // Modelos de Directorio de exportación
-model Company{
-  id String @id @default(uuid())
-  rnc String @unique
-  name String
-  email String?
-  phone String?
-  province String?
-  website String?
-  image String?
-  address String?
-  fob Decimal?
-  isWoman Boolean? @default(false)
+model Company {
+  id         String           @id @default(uuid())
+  rnc        String           @unique
+  name       String
+  email      String?
+  phone      String?
+  province   String?
+  website    String?
+  image      String?
+  address    String?
+  fob        Decimal?
+  isWoman    Boolean?         @default(false)
   created_By String?
   updated_By String?
-  created_At DateTime @default(now())
+  created_At DateTime         @default(now())
   updated_At DateTime?
-  authorized Boolean? @default(false)
-  product CompanyProduct[]
+  authorized Boolean?         @default(false)
+  product    CompanyProduct[]
 }
 
-model Product{
-  id String @id @default(uuid())
-  code String @unique
-  name String
-  nameEn String
-  alias String?
+model Product {
+  id      String           @id @default(uuid())
+  code    String           @unique
+  name    String
+  nameEn  String
+  alias   String?
   aliasEn String?
   company CompanyProduct[]
 }
 
-model Sector{
-  id String @id @default(uuid())
-  code String @unique
-  name String
-  nameEn String
-  alias String?
+model Sector {
+  id      String           @id @default(uuid())
+  code    String           @unique
+  name    String
+  nameEn  String
+  alias   String?
   aliasEn String?
   company CompanyProduct[]
 }
 
-model CompanyProduct{
-  company Company @relation(fields: [companyId], references: [rnc], onDelete: Cascade, onUpdate: Cascade)
+model CompanyProduct {
+  company   Company  @relation(fields: [companyId], references: [rnc], onDelete: Cascade, onUpdate: Cascade)
   companyId String
-  product Product @relation(fields: [productId], references: [code], onDelete: Cascade, onUpdate: Cascade)
+  product   Product  @relation(fields: [productId], references: [code], onDelete: Cascade, onUpdate: Cascade)
   productId String
-  sector Sector? @relation(fields: [chapter], references: [code], onDelete: Cascade, onUpdate: Cascade)
-  chapter String?
-  fob Decimal?
+  sector    Sector?  @relation(fields: [chapter], references: [code], onDelete: Cascade, onUpdate: Cascade)
+  chapter   String?
+  fob       Decimal?
+
   @@id([companyId, productId])
 }
 
 // Documentos generales.
 
-model Docs{
-  id String @id @default(uuid())
-  image String?
-  title String
-  name String?
-  date DateTime? @default(now())
-  size String?
-  tags String[]
+model Docs {
+  id         String    @id @default(uuid())
+  image      String?
+  title      String
+  name       String?
+  date       DateTime? @default(now())
+  size       String?
+  tags       String[]
   created_By String?
   updated_By String?
   created_At DateTime? @default(now())
@@ -269,26 +266,40 @@ model Docs{
 
 // Agenda
 
-model Schedule{
-  id String @id @default(uuid())
-  title String
-  titleEn String
-  date DateTime?
+model Schedule {
+  id         String    @id @default(uuid())
+  title      String
+  titleEn    String
+  date       DateTime?
   created_At DateTime? @default(now())
   updated_At DateTime?
-  status Boolean? @default(true)
+  status     Boolean?  @default(true)
   created_By String?
   updated_By String?
 }
 
-
 //Rating services
 
-model RatingServices{
-  id String @id @default(uuid())
-  score Int
-  message String
-  approved Boolean  @default(false)
-  created_At DateTime @default(now())
-  updated_At DateTime? 
+model RatingServices {
+  id         String    @id @default(uuid())
+  score      Int
+  message    String
+  approved   Boolean   @default(false)
+  created_At DateTime  @default(now())
+  updated_At DateTime?
+}
+
+model Feedback {
+  id          String    @id @default(uuid())
+  name        String
+  email       String
+  message     String
+  rating      Int?
+  serviceType String?   // "investment" | "export" | "general"
+  status      String    @default("pending")
+  isPublic    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  reviewedBy  String?
+  reviewedAt  DateTime?
 }
