@@ -32,6 +32,8 @@ export class FeedbackService {
         },
       });
 
+      // TODO: Implementación de notificaciones por correo (comentado para implementación futura)
+      /*
       // Enviar correo a los responsables si está habilitado
       if (FEEDBACK_CONFIG.sendEmailOnCreate) {
         const feedbackCode = feedback.id.substring(0, 8).toUpperCase();
@@ -82,6 +84,7 @@ export class FeedbackService {
           console.warn('⚠️  No hay responsables configurados. Configura permisos en Auth0 o usa FEEDBACK_EMAILS en .env');
         }
       }
+      */
 
       return feedback;
     } catch (error) {
