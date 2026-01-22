@@ -28,7 +28,10 @@ const getEmailsFromEnv = (): string[] => {
  * Fallback final si Auth0 y ENV fallan
  */
 const fallbackEmails = [
-  'atencion.ciudadano@prodominicana.gob.do',
+  'sorangeldiaz@prodominicana.gob.do',
+  'carmenperez@prodominicana.gob.do',
+  'gabrielaperez@prodominicana.gob.do',
+  'yahairasoto@prodominicana.gob.do',
 ];
 
 export const FEEDBACK_CONFIG = {

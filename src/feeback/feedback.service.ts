@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MailService } from '../mail/mail.service';
-import { FEEDBACK_CONFIG } from './feedback.config';
-import { FeedbackResponsibleService } from './feedback-responsible.service';
 
 @Injectable()
 export class FeedbackService {
   constructor(
     private prisma: PrismaService,
-    private mailService: MailService,
-    private responsibleService: FeedbackResponsibleService,
   ) {}
 
   async create(data: {
@@ -31,60 +26,6 @@ export class FeedbackService {
           isPublic: false,
         },
       });
-
-      // TODO: Implementación de notificaciones por correo (comentado para implementación futura)
-      /*
-      // Enviar correo a los responsables si está habilitado
-      if (FEEDBACK_CONFIG.sendEmailOnCreate) {
-        const feedbackCode = feedback.id.substring(0, 8).toUpperCase();
-        
-        // Obtener correos de responsables desde Auth0
-        let recipientEmails: string[] = [];
-        
-        if (FEEDBACK_CONFIG.useAuth0) {
-          // Obtener desde Auth0 según tipo de servicio
-          if (FEEDBACK_CONFIG.useServiceTypeEmails && data.serviceType) {
-            recipientEmails = await this.responsibleService.getByServiceType(data.serviceType);
-          } else {
-            recipientEmails = await this.responsibleService.getAllActive();
-          }
-          
-          // Si no hay responsables en Auth0, usar fallback
-          if (recipientEmails.length === 0) {
-            console.warn('No se encontraron responsables en Auth0, usando fallback de variables de entorno');
-            recipientEmails = FEEDBACK_CONFIG.responsibleEmails;
-          }
-        } else {
-          // Usar variables de entorno o configuración manual
-          recipientEmails = FEEDBACK_CONFIG.responsibleEmails;
-        }
-        
-        // Enviar correos en paralelo a todos los responsables
-        if (recipientEmails.length > 0) {
-          console.log(`Enviando notificaciones a ${recipientEmails.length} responsable(s): ${recipientEmails.join(', ')}`);
-          
-          const emailPromises = recipientEmails.map(email =>
-            this.mailService.newFeedbackNotification(
-              email,
-              data.name,
-              data.email,
-              data.message,
-              feedbackCode,
-              data.rating,
-              data.serviceType,
-              FEEDBACK_CONFIG.dashboardUrl,
-            )
-          );
-
-          await Promise.all(emailPromises).catch(error => {
-            console.error('Error al enviar notificaciones de correo:', error);
-            // No lanzamos el error para que no falle la creación del feedback si falla el correo
-          });
-        } else {
-          console.warn('⚠️  No hay responsables configurados. Configura permisos en Auth0 o usa FEEDBACK_EMAILS en .env');
-        }
-      }
-      */
 
       return feedback;
     } catch (error) {

@@ -4,6 +4,8 @@ import { join } from 'path';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailController } from './mail.controller';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { FeedbackService } from '../feeback/feedback.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 // console.log('dir',__dirname);
 @Module({
@@ -29,7 +31,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
       },
     }),
   ],
-  providers: [MailService],
+  providers: [MailService, FeedbackService, PrismaService],
   exports: [MailService],
   controllers: [MailController], // 👈 export for DI
 })

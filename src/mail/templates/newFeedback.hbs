@@ -48,110 +48,129 @@
     }
     .content {
       padding: 2rem;
-      background-color: #f9fafb;
+      color: #000000;
     }
-    .info-row {
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background-color: #ffffff;
+    .content h2 {
+      font-size: 1.5rem;
+      line-height: 2rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    .content img {
+      max-width: 100%;
+      height: auto;
+      margin: 1rem 0;
       border-radius: 0.5rem;
     }
-    .label {
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 0.25rem;
+    .content p {
+      font-size: 1rem;
+      line-height: 1.5rem;
+      margin: 1rem 0;
     }
-    .value {
-      color: #6b7280;
+    .content ul {
+      list-style: none;
+      padding: 0;
+    }
+    .content ul li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .content ul li:last-child {
+      border-bottom: none;
+    }
+    .footer {
+      background-color: #e5e5e5;
+      color: #000000;
+    }
+    .footer img {
+      max-width: 13rem;
+      height: auto;
+    }
+    .footer p {
+      font-size: 0.75rem;
+      line-height: 1rem;
+      margin: 0.5rem 0;
+    }
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .social-links a {
+      display: inline-block;
+      padding: 0.5rem;
+      background-color: #ffffff;
+      border-radius: 50%;
+    }
+    .social-links img {
+      width: 1.25rem;
+      height: 1.25rem;
     }
     .rating {
       color: #f59e0b;
       font-size: 1.25rem;
     }
-    .footer {
-      background-color: #1f2937;
-      color: #ffffff;
-    }
-    .btn {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
-      background-color: #2563eb;
-      color: #ffffff;
-      text-decoration: none;
-      border-radius: 0.5rem;
-      margin-top: 1rem;
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <img src="https://prodominicana.gob.do/images/logo.png" alt="ProDominicana">
-    </div>
-
-    <!-- Content -->
-    <div class="content">
-      <h1 style="color: #1f2937; margin-bottom: 1rem;">Nuevo Feedback Recibido</h1>
-      <p style="color: #6b7280; margin-bottom: 2rem;">Se ha recibido un nuevo feedback que requiere revisión.</p>
-
-      <!-- Código de Feedback -->
-      <div class="info-row">
-        <div class="label">Código de Feedback:</div>
-        <div class="value">{{feedbackCode}}</div>
+  <div role="article" aria-roledescription="email" aria-label="Correo electrónico">
+    <div class="container">
+      <!-- Encabezado -->
+      <div class="header">
+        <img src="https://sinim.prodominicana.gob.do/images/logo/prodominicana.png" alt="Logo de ProDominicana">
       </div>
 
-      <!-- Nombre -->
-      <div class="info-row">
-        <div class="label">Nombre:</div>
-        <div class="value">{{name}}</div>
+      <!-- Contenido principal -->
+      <div class="content">
+        <div class="text-gray-500">Nuevo Feedback recibido</div>
+        <p>Se ha recibido un nuevo feedback a través del formulario. Aquí están los detalles:</p>
+        <ul>
+          <li><strong>Código de Feedback:</strong> {{feedbackCode}}</li>
+          <li><strong>Nombre:</strong> {{name}}</li>
+          <li><strong>Correo electrónico:</strong> {{email}}</li>
+          {{#if serviceType}}
+          <li><strong>Tipo de Servicio:</strong> {{serviceType}}</li>
+          {{/if}}
+          {{#if rating}}
+          <li><strong>Calificación:</strong> <span class="rating">{{rating}} ⭐</span></li>
+          {{/if}}
+          <li><strong>Mensaje:</strong> {{message}}</li>
+          <li><strong>Fecha de Recepción:</strong> {{createdAt}}</li>
+        </ul>
+        <p>Por favor, revisar esta información y realiza el seguimiento correspondiente.</p>
+        {{#if dashboardUrl}}
+        <p style="text-align: center;">
+          <a href="{{dashboardUrl}}" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 0.5rem; margin-top: 1rem;">Ver en el Panel de Administración</a>
+        </p>
+        {{/if}}
       </div>
 
-      <!-- Email -->
-      <div class="info-row">
-        <div class="label">Correo Electrónico:</div>
-        <div class="value">{{email}}</div>
+      <!-- Pie de página -->
+      <div class="footer">
+        <img src="https://sinim.prodominicana.gob.do/images/logo/prodominicana.png" alt="Logo de ProDominicana">
+        <p>Centro de Exportación e Inversión de la República Dominicana</p>
+        <p>Av. 27 de Febrero esq. Av. Gregorio Luperón, Santo Domingo, República Dominicana</p>
+        <p>Tel: +1 809-530-5505</p>
+
+        <!-- Enlaces a redes sociales -->
+        <div class="social-links">
+          <a href="https://www.facebook.com/ProDominicana" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/facebook.png" alt="Facebook">
+          </a>
+          <a href="https://www.instagram.com/ProDominicana" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/instagram.png" alt="Instagram">
+          </a>
+          <a href="https://www.linkedin.com/company/ceird/" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/linkedin.png" alt="LinkedIn">
+          </a>
+          <a href="mailto:inteligenciademercados@prodominicana.gob.do" target="_blank">
+            <img src="https://sinim.prodominicana.gob.do/images/social/mail.png" alt="Correo electrónico">
+          </a>
+        </div>
+
+        <p style="font-size: 10px;">Prodominicana © {{year}} Todos los derechos reservados</p>
       </div>
-
-      {{#if serviceType}}
-      <!-- Tipo de Servicio -->
-      <div class="info-row">
-        <div class="label">Tipo de Servicio:</div>
-        <div class="value">{{serviceType}}</div>
-      </div>
-      {{/if}}
-
-      {{#if rating}}
-      <!-- Calificación -->
-      <div class="info-row">
-        <div class="label">Calificación:</div>
-        <div class="rating">{{rating}} ⭐</div>
-      </div>
-      {{/if}}
-
-      <!-- Mensaje -->
-      <div class="info-row">
-        <div class="label">Mensaje:</div>
-        <div class="value" style="white-space: pre-wrap;">{{message}}</div>
-      </div>
-
-      <!-- Fecha -->
-      <div class="info-row">
-        <div class="label">Fecha de Recepción:</div>
-        <div class="value">{{createdAt}}</div>
-      </div>
-
-      <p style="text-align: center;">
-        <a href="{{dashboardUrl}}" class="btn">Ver en el Panel de Administración</a>
-      </p>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-      <p style="margin: 0;">© {{year}} ProDominicana. Todos los derechos reservados.</p>
-      <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: #9ca3af;">
-        Este es un correo automático, por favor no responder.
-      </p>
     </div>
   </div>
 </body>
