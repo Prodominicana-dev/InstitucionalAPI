@@ -42,19 +42,19 @@ export class MailController {
     @Body() data: ComplainttDto
   ) {
     return this.mailService.complaint(
-    'denuncia@prodominicana.gob.do',
-    data.name,
-    data.lastName,
-    data.email,
-    data.companyName,
-    data.departmen,
-    data.involvedPerson,
-    data.date,
-    data.contactCode,
-    data.message,
-    
-    //josegarcia@prodominicana.gob.do
-    //denuncia@prodominicana.gob.do
+      'denuncia@prodominicana.gob.do',
+      data.name,
+      data.lastName,
+      data.email,
+      data.companyName,
+      data.departmen,
+      data.involvedPerson,
+      data.date,
+      data.contactCode,
+      data.message,
+
+      //josegarcia@prodominicana.gob.do
+      //denuncia@prodominicana.gob.do
     )
   }
 
@@ -114,17 +114,35 @@ export class MailController {
   ) {
     // 1. Crear el feedback en la base de datos
     const feedback = await this.feedbackService.create(data);
-    
+
     // 2. Generar código de feedback
     const feedbackCode = feedback.id.substring(0, 8).toUpperCase();
-    
+
     // 3. Lista de correos responsables (hardcoded como los demás)
     const responsibleEmails = [
-      'gestiondecalidad@prodominicana.gob.do',
-     
-     
+
+      'sorangeldiaz@prodominicana.gob.do',
+
+      'carmenperez@prodominicana.gob.do',
+
+
+      'gabrielaperez@prodominicana.gob.do',
+
+      'yahairasoto@prodominicana.gob.do'
+
+
     ];
-    
+
+    // 'sorangeldiaz@prodominicana.gob.do',
+    // 'carmenperez@prodominicana.gob.do',
+
+
+    // 'gabrielaperez@prodominicana.gob.do',
+
+    // 'yahairasoto@prodominicana.gob.do'
+    // 'josegarcia@prodominicana.gob.do',
+    // 'viguera27@gmail.com'
+
     // 4. Enviar emails a los 4 responsables
     await this.mailService.feedback(
       responsibleEmails,
@@ -135,7 +153,7 @@ export class MailController {
       data.rating,
       data.serviceType
     );
-    
+
     return feedback;
   }
 
