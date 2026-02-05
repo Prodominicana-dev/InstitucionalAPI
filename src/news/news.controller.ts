@@ -38,13 +38,13 @@ export class NewsController {
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
       const auth0Token = await validateUser(idDecrypted, 'create:news');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      console.log(body);
+      // console.log(body);
       const news = await this.newsService.create(body);
       /* Crear ruta de las noticias */
-      console.log(news);
+      // console.log(news);
       if (files === undefined) return res.status(201).json(news);
       /* Guardar archivos */
-      console.log(files);
+      // console.log(files);
       await files.forEach(async (file) => {
         const pathFolder = path.join(process.cwd(), `/public/news/${news.id}`);
         if (!fs.existsSync(pathFolder)) {
@@ -124,7 +124,7 @@ export class NewsController {
   async getAllEsNews(@Param('lang') lang: string, @Res() res) {
     try {
       const news = await this.newsService.findAll(lang);
-      console.log(news);
+      // console.log(news);
       return res.status(200).json(news);
     } catch (error) {
       return res.status(404).json({ error });
@@ -147,7 +147,7 @@ export class NewsController {
   async getOneNewsById(@Param('id') id: string, @Res() res) {
     try {
       const news = await this.newsService.findOneById(id);
-      console.log(news);
+      // console.log(news);
       return res.status(200).json(news);
     } catch (error) {
       return res.status(404).json({ error });
@@ -163,7 +163,7 @@ export class NewsController {
   ) {
     try {
       const news = await this.newsService.findOne(id, lang);
-      console.log(news);
+      // console.log(news);
       return res.status(200).json(news);
     } catch (error) {
       return res.status(404).json({ error });
