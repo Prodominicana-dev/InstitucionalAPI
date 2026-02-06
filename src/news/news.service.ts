@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { News, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NewsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /* Crear noticia */
   async create(data: any): Promise<any> {
@@ -34,14 +34,41 @@ export class NewsService {
     try {
       const oldNews = await this.prisma.news.findUnique({ where: { id } });
       if (!oldNews) throw new Error('Noticia no encontrada');
+
       const { en, es, images } = data;
+
+      // Parseo seguro de metadata
       let news = undefined;
       if (en !== undefined && es !== undefined) {
-        const news_en = JSON.parse(en);
-        const news_es = JSON.parse(es);
-        news = [news_en, news_es];
+        try {
+          const news_en = JSON.parse(en);
+          const news_es = JSON.parse(es);
+          news = [news_en, news_es];
+        } catch (error) {
+          console.error('Error parseando metadata:', error);
+          throw new Error('Formato de metadata inválido');
+        }
       }
-      const imagesr = JSON.parse(images);
+
+      // ✅ Parseo seguro de images
+      let imagesr = oldNews.images; // Usa las imágenes antiguas por defecto
+
+      if (images) {
+        try {
+          // Si images es un string, parsearlo
+          if (typeof images === 'string') {
+            imagesr = JSON.parse(images);
+          } else {
+            // Si ya es un objeto/array, úsalo directamente
+            imagesr = images;
+          }
+        } catch (error) {
+          console.error('Error parseando images:', error);
+          console.error('Valor de images:', images);
+          throw new Error('Formato de imágenes inválido');
+        }
+      }
+
       const newData = {
         metadata: news !== undefined ? news : oldNews.metadata,
         cover: data.cover || oldNews.cover,
@@ -57,8 +84,19 @@ export class NewsService {
         where: { id },
         data: newData,
       });
+
     } catch (error) {
-      throw new Error(error);
+      console.error('Error completo en update:', error);
+
+      // ✅ Mejor manejo de errores
+      if (error.message) {
+        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      }
+
+      throw new HttpException(
+        'Error al actualizar la noticia',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -123,9 +161,10 @@ export class NewsService {
   }
 
   /* Todas las noticias */
-  async findAll(lang: string): Promise<any> {
+  async findAll(lang: string, showAll: boolean = false): Promise<any> {
     try {
       const news = await this.prisma.news.findMany({
+        where: showAll ? {} : { status: true },
         orderBy: {
           date: 'desc',
         },
@@ -156,6 +195,7 @@ export class NewsService {
   async findLastTwo(lang: string): Promise<any> {
     try {
       const news = await this.prisma.news.findMany({
+        where: { status: true },
         orderBy: {
           date: 'desc',
         },

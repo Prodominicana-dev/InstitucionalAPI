@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   StreamableFile,
+  Query,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -36,7 +37,7 @@ export class EventsController {
       const event = await this.eventsService.create(body);
       if (files !== undefined) {
         // Crear ruta del evento
-        console.log(`aaa ${event}`);
+        // console.log(`aaa ${event}`);
         const pathFolder = path.join(
           process.cwd(),
           `/public/events/${event.id}`,
@@ -168,22 +169,23 @@ export class EventsController {
   }
 
   /* Obtener todos los eventos */
-  @Get('/:lang/events')
-  async getAllEvents(@Param('lang') lang: string, @Res() res) {
-    try {
-      const events = await this.eventsService.findAllEnable(lang);
-      return res.status(200).json(events);
-    } catch (error) {
-      return res.status(404).json({ error });
-    }
-  }
+ @Get(':lang/events')
+async getAllEvents(
+  @Param('lang') lang: string,
+  @Query('all') all: string,
+  @Res() res
+) {
+  const showAll = all === 'true';
+  const events = await this.eventsService.findAllEnable(lang, showAll);
+  return res.status(200).json(events);
+}
 
   // Obtener por id
   @Get('events/:id')
   async getOneNewsById(@Param('id') id: string, @Res() res) {
     try {
       const event = await this.eventsService.findOneById(id);
-      console.log(event);
+      // console.log(event);
       return res.status(200).json(event);
     } catch (error) {
       return res.status(404).json({ error });

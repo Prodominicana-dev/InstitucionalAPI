@@ -120,7 +120,7 @@ export class SubsectionService {
     if (subsection.type !== 'document') return;
     let filter = [];
     subsection.documents.map((doc) => {
-      console.log(doc.date);
+      // console.log(doc.date);
       // Convertir doc.date a fecha
       const date = new Date(doc.date);
       // Identificar el año y el mes y agregarlo a un arreglo de años con meses la estructura seria: {year: 2021, months: [{month: 1, name: 'Enero'}, {month: 2, name: 'Febrero'}]}

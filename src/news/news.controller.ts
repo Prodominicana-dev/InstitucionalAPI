@@ -11,6 +11,8 @@ import {
   UploadedFiles,
   StreamableFile,
   Header,
+  NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { validateUser } from 'src/validation/validation';
@@ -18,6 +20,7 @@ import { NewsDto } from './dto/news.dto';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { rimraf } from 'rimraf';
+import { existsSync, readdirSync } from 'fs';
 const CryptoJS = require('crypto-js');
 
 const fs = require('fs');
@@ -26,7 +29,35 @@ const mime = require('mime-types');
 
 @Controller('apiv2/')
 export class NewsController {
-  constructor(private readonly newsService: NewsService) {}
+  constructor(private readonly newsService: NewsService) { }
+  private sanitizeFilename(filename: string): string {
+    const ext = path.extname(filename);
+    const nameWithoutExt = filename.replace(ext, '');
+
+    // ✅ Mapeo manual de caracteres con tilde (más confiable en Windows)
+    const accentMap = {
+      'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+      'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+      'ñ': 'n', 'Ñ': 'N',
+      'ü': 'u', 'Ü': 'U'
+    };
+
+    let sanitized = nameWithoutExt;
+
+    // Reemplaza caracteres acentuados manualmente
+    Object.keys(accentMap).forEach(char => {
+      sanitized = sanitized.replace(new RegExp(char, 'g'), accentMap[char]);
+    });
+
+    // Limpia el resto
+    sanitized = sanitized
+      .replace(/[^a-zA-Z0-9]/g, '-') // Todo excepto letras/números → guión
+      .replace(/-+/g, '-') // Múltiples guiones → uno solo
+      .replace(/^-|-$/g, '') // Quita guiones al inicio/final
+      .substring(0, 100); // Máximo 100 caracteres
+
+    return sanitized + ext;
+  }
 
   /* Crear una noticia */
   @Post('news')
@@ -61,75 +92,172 @@ export class NewsController {
   }
 
   /* Editar una noticia */
-  @Patch('news/:id')
-  @UseInterceptors(FilesInterceptor('files'))
-  async updateNews(
-    @Param('id') id: string,
-    @Body() body: any,
-    @Res() res,
-    @UploadedFiles() files?,
-  ) {
-    try {
-      const _id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:news');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-      const news = await this.newsService.update(id, body);
-      if (files === undefined || files.length === 0) {
-        return res.status(200).json(news);
-      }
+@Patch('news/:id')
+@UseInterceptors(FilesInterceptor('files'))
+async updateNews(
+  @Param('id') id: string,
+  @Body() body: any,
+  @Res() res,
+  @UploadedFiles() files?,
+) {
+  try {
+    const _id = res.req.headers.authorization;
+    const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
+    const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
+    const auth0Token = await validateUser(idDecrypted, 'create:news');
+    if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
 
-      /* Crear ruta de las noticias */
-      const pathFolder = path.join(process.cwd(), `/public/news/${news.id}`);
-
-      /* Eliminar la carpeta, si existe */
-      await rimraf(pathFolder);
-
-      if (!fs.existsSync(pathFolder)) {
-        fs.mkdirSync(pathFolder, { recursive: true });
-      }
-      /* Guardar archivos */
-      await files.forEach(async (file) => {
-        const fileName = file.originalname;
-        await fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
-        news.image = `${fileName}`;
-        await this.newsService.update(news.id, news);
-        return res.status(200).json(news);
-      });
-    } catch (error) {
-      return res.status(500).json({ error });
+    // ✅ Si no hay archivos nuevos, actualiza sin tocar imágenes
+    if (!files || files.length === 0) {
+      const { images, cover, ...bodyWithoutImages } = body;
+      const news = await this.newsService.update(id, bodyWithoutImages);
+      return res.status(200).json(news);
     }
-  }
 
+    // ✅ Si hay archivos nuevos, procesa normalmente
+    const news = await this.newsService.update(id, body);
+
+    const pathFolder = path.join(process.cwd(), `/public/news/${news.id}`);
+
+    if (fs.existsSync(pathFolder)) {
+      await rimraf(pathFolder);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    fs.mkdirSync(pathFolder, { recursive: true });
+
+    const savedFiles = [];
+
+    for (const file of files) {
+      const safeFileName = this.sanitizeFilename(file.originalname);
+      const filePath = path.join(pathFolder, safeFileName);
+
+      await fs.promises.writeFile(filePath, file.buffer);
+      savedFiles.push(safeFileName);
+    }
+
+    news.images = savedFiles;
+    const updatedNews = await this.newsService.update(news.id, {
+      ...body,
+      images: JSON.stringify(savedFiles),
+       cover: savedFiles[0],
+    });
+
+    return res.status(200).json(updatedNews);
+
+  } catch (error) {
+    console.error('Error en updateNews:', error);
+    return res.status(500).json({ error: error.message });
+  }
+}
   @Get('/news/images/:id/:name')
   getImages(
     @Param('id') id: string,
     @Param('name') imageName: string,
     @Res({ passthrough: true }) res: Response,
   ): StreamableFile {
-    res.set({ 'Content-Type': 'image/jpeg' });
-    const imagePath = path.join(process.cwd(), `public/news/${id}`, imageName);
-    //   const mimeType = mime.lookup(imageName);
-    //   if (!mimeType) {
-    //     return undefined;
-    //   }
-    const fileStream = fs.createReadStream(imagePath);
-    const streamableFile = new StreamableFile(fileStream);
-    //   streamableFile.options.type = mimeType
-    return streamableFile;
-  }
-  /* Obtener todos las noticias */
-  @Get(':lang/news')
-  async getAllEsNews(@Param('lang') lang: string, @Res() res) {
-    try {
-      const news = await this.newsService.findAll(lang);
-      // console.log(news);
-      return res.status(200).json(news);
-    } catch (error) {
-      return res.status(404).json({ error });
+    const dirPath = path.join(process.cwd(), `public/news/${id}`);
+
+    if (!existsSync(dirPath)) {
+      console.error('❌ Directorio no existe:', dirPath);
+      throw new NotFoundException('Directorio no encontrado');
     }
+
+    const files = readdirSync(dirPath);
+
+    if (files.length === 0) {
+      throw new NotFoundException('No hay imágenes en este directorio');
+    }
+
+    let matchingFile = null;
+
+    // Intento 1: Nombre exacto
+    if (files.includes(imageName)) {
+      matchingFile = imageName;
+    }
+
+    // Intento 2: Sanitizados
+    if (!matchingFile) {
+      const requestedSanitized = this.sanitizeFilename(imageName);
+
+      matchingFile = files.find(f =>
+        this.sanitizeFilename(f) === requestedSanitized
+      );
+    }
+
+    // Intento 3: Solo letras y números (ignora TODO lo demás)
+    if (!matchingFile) {
+      const cleanRequested = imageName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Quita tildes
+        .replace(/[^a-z0-9.]/g, ''); // Solo letras, números y punto
+
+      matchingFile = files.find(f => {
+        const cleanFile = f
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9.]/g, '');
+
+        const matches = cleanFile === cleanRequested;
+        if (matches)
+        return matches;
+      });
+
+      // if (matchingFile) console.log(' Match alfanumérico');
+    }
+
+    // Intento 4: Primera imagen (fallback final)
+    if (!matchingFile) {
+      matchingFile = files.find(f =>
+        /\.(jpg|jpeg|png|gif|webp)$/i.test(f)
+      );
+      // if (matchingFile) console.log(' Usando primera imagen disponible');
+    }
+
+    if (!matchingFile) {
+      console.error('No se pudo encontrar ninguna coincidencia');
+      console.error('Se buscaba:', imageName);
+      console.error('Disponibles:', files);
+      throw new NotFoundException('Imagen no encontrada');
+    }
+
+    // console.log(' Sirviendo archivo:', matchingFile);
+
+    const finalPath = path.join(dirPath, matchingFile);
+
+    const ext = path.extname(finalPath).toLowerCase();
+    const mimeTypes = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+    };
+
+    res.set({ 'Content-Type': mimeTypes[ext] || 'image/jpeg' });
+
+    return new StreamableFile(fs.createReadStream(finalPath));
   }
+
+  /* Obtener todos las noticias */
+ @Get(':lang/news')
+async getAllEsNews(
+  @Param('lang') lang: string,
+  @Query('all') all: string,
+  @Res() res
+) {
+  try {
+    const showAll = all === 'true';
+    const news = await this.newsService.findAll(lang, showAll);
+    return res.status(200).json(news);
+  } catch (error) {
+    return res.status(404).json({ error });
+  }
+}
+
 
   @Get(':lang/lastTwoNews')
   async getLastTwoNews(@Param('lang') lang: string): Promise<any> {

@@ -37,7 +37,7 @@ export class DocsController {
       if (body.tags) {
         console.log(body.tags);
         const tags = body.tags.split(',');
-        console.log(tags);
+        // console.log(tags);
         body.tags = tags;
       }
 

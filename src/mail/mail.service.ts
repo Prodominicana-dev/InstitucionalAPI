@@ -80,7 +80,7 @@ export class MailService {
     }
   }
   async serviceForm(toemail, name, lastName, message, email, contact, id, Phone,contactCode) {
-  console.log('toemail:', toemail);
+  // console.log('toemail:', toemail);
     try {
 
       const result = await this.mailerService.sendMail({

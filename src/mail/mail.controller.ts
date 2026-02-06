@@ -118,7 +118,7 @@ export class MailController {
     // 2. Generar código de feedback
     const feedbackCode = feedback.id.substring(0, 8).toUpperCase();
 
-    // 3. Lista de correos responsables (hardcoded como los demás)
+    // 3. Lista de correos responsables (hardcoded como los demás)    
     const responsibleEmails = [
 
       'sorangeldiaz@prodominicana.gob.do',
@@ -141,7 +141,7 @@ export class MailController {
 
     // 'yahairasoto@prodominicana.gob.do'
     // 'josegarcia@prodominicana.gob.do',
-    // 'viguera27@gmail.com'
+ 
 
     // 4. Enviar emails a los 4 responsables
     await this.mailService.feedback(

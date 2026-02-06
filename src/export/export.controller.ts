@@ -34,7 +34,7 @@ export class ExportController {
     @UploadedFiles() files?,
   ) {
     try {
-      console.log(body);
+      // console.log(body);
       // Convertir products a array de strings
       const products = body.products.split(',');
       // Convertir sectors a array de strings
