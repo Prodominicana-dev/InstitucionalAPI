@@ -3,6 +3,19 @@ import * as path from 'path';
 
 const FORMULARIOS_FILE = path.join(process.cwd(), 'event-forms', 'formularios.json');
 
+
+async function ensureFileExists(): Promise<void> {
+  try {
+    await fs.access(FORMULARIOS_FILE);
+  } catch {
+    // Si no existe, crear carpeta y archivo
+    const dir = path.dirname(FORMULARIOS_FILE);
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(FORMULARIOS_FILE, '{}');
+    // console.log('✅ Archivo formularios.json creado automáticamente');
+  }
+}
+
 // Leer todos los formularios
 export async function leerFormularios(): Promise<Record<string, string>> {
   try {

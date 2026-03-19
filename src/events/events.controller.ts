@@ -54,7 +54,7 @@ export class EventsController {
       // ✅ GUARDAR FORMULARIO EN JSON
       if (body.formulario_url && body.formulario_url.trim() !== '') {
         await guardarFormulario(event.id, body.formulario_url.trim());
-        console.log('✅ Formulario guardado:', event.id, '→', body.formulario_url);
+        // console.log('✅ Formulario guardado:', event.id, '→', body.formulario_url);
       }
 
       return res.status(201).json({ message: 'Eventos creados' });
@@ -94,10 +94,10 @@ export class EventsController {
       if (body.formulario_url !== undefined) {
         if (body.formulario_url && body.formulario_url.trim() !== '') {
           await guardarFormulario(event.id, body.formulario_url.trim());
-          console.log('✅ Formulario actualizado:', event.id);
+          // console.log('✅ Formulario actualizado:', event.id);
         } else {
           await eliminarFormulario(event.id);
-          console.log('✅ Formulario eliminado:', event.id);
+          // console.log('✅ Formulario eliminado:', event.id);
         }
       }
 

@@ -38,3 +38,6 @@ lerna-debug.log*
 
 # Ignore /public
 /public
+
+# Event forms data (cada entorno tiene su propia versión)
+event-forms/formularios.js
