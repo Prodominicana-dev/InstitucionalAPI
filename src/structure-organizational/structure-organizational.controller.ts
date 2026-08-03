@@ -156,11 +156,10 @@ export class StructureOrganizationalController {
     }
   }
 
-  /* Obtener todos los miembros */
+  /* Obtener todos los miembros (solo visibles) */
   @Get(':lang/member')
   async getMembers(@Param('lang') lang: string, @Res() res) {
     try {
-      // Construir el siguiente modelo de member para retornar: { name, direction, es, en, image}
       const members =
         await this.structureOrganizationalService.getMembers(lang);
       return res.status(200).json(members);
@@ -169,7 +168,19 @@ export class StructureOrganizationalController {
     }
   }
 
-  /* Obtener todos los miembros de un departamento */
+  /* Obtener todos los miembros incluyendo ocultos (para admin) */
+  @Get('admin/:lang/member')
+  async getAllMembers(@Param('lang') lang: string, @Res() res) {
+    try {
+      const members =
+        await this.structureOrganizationalService.getAllMembers(lang);
+      return res.status(200).json(members);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  /* Obtener todos los miembros de un departamento (solo visibles) */
   @Get(':lang/member/direction/:id')
   async getMembersByDirection(
     @Param('id') id: string,
@@ -177,13 +188,55 @@ export class StructureOrganizationalController {
     @Res() res,
   ) {
     try {
-      // Construir el siguiente modelo de member para retornar: { name, direction, es, en, image}
       const members =
         await this.structureOrganizationalService.getMembersByDirection(
           id,
           lang,
         );
       return res.status(200).json(members);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  /* Obtener todos los miembros de un departamento incluyendo ocultos (para admin) */
+  @Get('admin/:lang/member/direction/:id')
+  async getAllMembersByDirection(
+    @Param('id') id: string,
+    @Param('lang') lang: string,
+    @Res() res,
+  ) {
+    try {
+      const members =
+        await this.structureOrganizationalService.getAllMembersByDirection(
+          id,
+          lang,
+        );
+      return res.status(200).json(members);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  /* Mostrar un miembro */
+  @Patch('member/show/:id')
+  async showMember(@Param('id') id: string, @Res() res) {
+    try {
+      const member =
+        await this.structureOrganizationalService.showMember(id);
+      return res.status(200).json(member);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  /* Ocultar un miembro */
+  @Patch('member/hide/:id')
+  async hideMember(@Param('id') id: string, @Res() res) {
+    try {
+      const member =
+        await this.structureOrganizationalService.hideMember(id);
+      return res.status(200).json(member);
     } catch (error) {
       throw new Error(error);
     }

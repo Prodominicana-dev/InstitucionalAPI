@@ -58,10 +58,11 @@ export class StructureOrganizationalService {
     }
   }
 
-  // Obtener todos los miembros de un departamento, con el departamento
+  // Obtener todos los miembros de un departamento, con el departamento (solo visibles)
   async getMembers(lang: string): Promise<any[]> {
     try {
       const member = await this.prisma.member.findMany({
+        where: { visible: true },
         include: { department: true },
       });
       return member.flatMap((n: any) => {
@@ -81,6 +82,30 @@ export class StructureOrganizationalService {
     }
   }
 
+  // Obtener todos los miembros (incluyendo ocultos) para admin
+  async getAllMembers(lang: string): Promise<any[]> {
+    try {
+      const member = await this.prisma.member.findMany({
+        include: { department: true },
+      });
+      return member.flatMap((n: any) => {
+        return n.metadata
+          .filter((m: any) => m.language === lang)
+          .map((filteredNews: any) => ({
+            id: n.id,
+            name: n.name,
+            image: n.image,
+            isDirector: n.isDirector,
+            visible: n.visible,
+            department: n.department,
+            ...filteredNews,
+          }));
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   // Obtener miembro por id
   async getMemberById(id: string): Promise<any> {
     try {
@@ -88,7 +113,7 @@ export class StructureOrganizationalService {
         where: { id },
         include: { department: true },
       });
-      if (!member) throw new NotFoundException('Noticia no encontrada');
+      if (!member) throw new NotFoundException('Miembro no encontrado');
       const es = member.metadata
         .filter((m: any) => m.language === 'es')
         .flatMap((filteredNews: any) => ({
@@ -105,6 +130,7 @@ export class StructureOrganizationalService {
         image: member.image,
         name: member.name,
         isDirector: member.isDirector,
+        visible: member.visible,
         department: member.department,
         departmentId: member.departmentId,
         es: es[0],
@@ -116,8 +142,68 @@ export class StructureOrganizationalService {
     }
   }
 
-  // Obtener todos los miembros de un departamento
+  // Mostrar un miembro (visible = true)
+  async showMember(id: string): Promise<Member> {
+    try {
+      const member = await this.prisma.member.findUnique({
+        where: { id },
+      });
+      if (!member) throw new NotFoundException('Miembro no encontrado');
+      return await this.prisma.member.update({
+        where: { id },
+        data: { visible: true },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  // Ocultar un miembro (visible = false)
+  async hideMember(id: string): Promise<Member> {
+    try {
+      const member = await this.prisma.member.findUnique({
+        where: { id },
+      });
+      if (!member) throw new NotFoundException('Miembro no encontrado');
+      return await this.prisma.member.update({
+        where: { id },
+        data: { visible: false },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  // Obtener todos los miembros de un departamento (solo visibles)
   async getMembersByDirection(id: string, lang: string): Promise<any[]> {
+    try {
+      const member = await this.prisma.member.findMany({
+        where: { departmentId: id, visible: true },
+        include: { department: true },
+      });
+      return member
+        .flatMap((n: any) => {
+          return n.metadata
+            .filter((m: any) => m.language === lang)
+            .map((filteredNews: any) => ({
+              id: n.id,
+              name: n.name,
+              image: n.image,
+              isDirector: n.isDirector,
+              department: n.department,
+              ...filteredNews,
+            }));
+        })
+        .sort((a, b) =>
+          a.isDirector === b.isDirector ? 0 : a.isDirector ? -1 : 1,
+        );
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  // Obtener todos los miembros de un departamento (incluyendo ocultos) para admin
+  async getAllMembersByDirection(id: string, lang: string): Promise<any[]> {
     try {
       const member = await this.prisma.member.findMany({
         where: { departmentId: id },
@@ -132,6 +218,7 @@ export class StructureOrganizationalService {
               name: n.name,
               image: n.image,
               isDirector: n.isDirector,
+              visible: n.visible,
               department: n.department,
               ...filteredNews,
             }));

@@ -143,6 +143,7 @@ model Member {
   name         String
   metadata     Json[]
   isDirector   Boolean?    @default(false)
+  visible      Boolean?    @default(true)
   image        String?
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
