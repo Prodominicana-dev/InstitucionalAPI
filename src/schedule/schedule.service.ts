@@ -96,11 +96,14 @@ export class ScheduleService {
     }
   }
 
-  // Obtener todos los schedules publicados (pagina "ver mas")
+  // Obtener toda la agenda vigente (pagina "ver mas"): lo mismo que el home
+  // pero sin limite, porque puede haber mas eventos futuros de los que caben.
   async getAllPublic() {
     try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
       return await this.prisma.schedule.findMany({
-        where: { status: true },
+        where: { status: true, date: { gte: today } },
         orderBy: scheduleOrderBy,
       });
     } catch (error) {
