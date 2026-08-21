@@ -272,6 +272,7 @@ model Schedule {
   title      String
   titleEn    String
   date       DateTime?
+  order      Int?
   created_At DateTime? @default(now())
   updated_At DateTime?
   status     Boolean?  @default(true)
