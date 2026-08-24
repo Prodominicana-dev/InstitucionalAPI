@@ -17,6 +17,7 @@ import { ExportModule } from './export/export.module';
 import { ProductModule } from './product/product.module';
 import { SectorModule } from './sector/sector.module';
 import { DocsModule } from './docs/docs.module';
+import { QrDocsModule } from './qr-docs/qr-docs.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import {MailModule} from './mail/mail.module';
 import { FeedbackModule } from './feeback/feeback.module';
@@ -41,6 +42,7 @@ import { FeedbackModule } from './feeback/feeback.module';
     ProductModule,
     SectorModule,
     DocsModule,
+    QrDocsModule,
     ScheduleModule,
     MailModule,
     // RatingServiceModule

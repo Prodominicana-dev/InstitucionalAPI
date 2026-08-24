@@ -41,3 +41,8 @@ lerna-debug.log*
 
 # Event forms data (cada entorno tiene su propia versión)
 event-forms/formularios.js
+
+# Documentos QR: copias de seguridad y archivos a medio subir. Son propios de
+# cada entorno y contienen PDF institucionales, así que no van al repositorio.
+/qr-backups
+/qr-tmp
