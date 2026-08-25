@@ -13,7 +13,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { validateUser } from 'src/validation/validation';
 
 const CryptoJS = require('crypto-js');
-const { diskStorage } = require('multer');
 const fs = require('fs');
 const path = require('path');
 
@@ -33,13 +32,6 @@ function carpetaDestino(): string {
    API y no del portal, para que no quede accesible al público. */
 function carpetaRespaldos(): string {
   return path.join(process.cwd(), 'qr-backups');
-}
-
-/* El archivo se escribe primero aquí y solo se mueve a su destino cuando la
-   subida terminó completa: así una conexión cortada no deja un PDF a medias
-   en la dirección que abre el código QR. */
-function carpetaTemporal(): string {
-  return path.join(process.cwd(), 'qr-tmp');
 }
 
 /* Copias que se conservan de cada documento. Una sola: la versión que se acaba
@@ -94,12 +86,6 @@ function nombreSeguro(nombre: string): string {
   return base.toLowerCase().endsWith('.pdf') ? base : `${base}.pdf`;
 }
 
-function limpiarTemporales(files: any[]) {
-  (files ?? []).forEach((file: any) => {
-    if (file?.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
-  });
-}
-
 @Controller('apiv2/qr-docs')
 export class QrDocsController {
   /* Listado de los PDF disponibles en la carpeta de los códigos QR */
@@ -133,24 +119,11 @@ export class QrDocsController {
 
   /* Sube un PDF nuevo o reemplaza uno existente conservando su nombre.
 
-     El archivo se escribe en disco a medida que llega, en lugar de retenerse
-     en memoria: es lo que permite subir guías de decenas de MB sin que la
-     carga falle. */
+     Se usa el interceptor sin opciones, igual que los módulos de documentos y
+     eventos: el archivo llega en memoria y se escribe de una vez. Es la forma
+     que ya funciona en este servidor. */
   @Post()
-  @UseInterceptors(
-    FilesInterceptor('files', 1, {
-      storage: diskStorage({
-        destination: (req: any, file: any, cb: any) => {
-          const temporal = carpetaTemporal();
-          asegurarCarpeta(temporal);
-          cb(null, temporal);
-        },
-        filename: (req: any, file: any, cb: any) =>
-          cb(null, `${Date.now()}.subida`),
-      }),
-      limits: { fileSize: 200 * 1024 * 1024 },
-    }),
-  )
+  @UseInterceptors(FilesInterceptor('files'))
   async subirDocumento(@UploadedFiles() files, @Body() body: any, @Res() res) {
     try {
       const _id = res.req.headers.authorization;
@@ -158,7 +131,6 @@ export class QrDocsController {
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
       const auth0Token = await validateUser(idDecrypted, 'create:transparency');
       if (!auth0Token) {
-        limpiarTemporales(files);
         return res.status(401).send({ message: 'Unauthorized' });
       }
 
@@ -170,7 +142,6 @@ export class QrDocsController {
 
       const archivo = files[0];
       if (archivo.mimetype !== 'application/pdf') {
-        limpiarTemporales(files);
         return res
           .status(400)
           .send({ message: 'Solo se admiten archivos en formato PDF' });
@@ -188,14 +159,7 @@ export class QrDocsController {
 
       if (existia) respaldar(destino, nombre);
 
-      /* rename falla entre discos distintos; en ese caso se copia y se borra
-         el temporal. */
-      try {
-        fs.renameSync(archivo.path, destino);
-      } catch (error) {
-        fs.copyFileSync(archivo.path, destino);
-        fs.unlinkSync(archivo.path);
-      }
+      fs.writeFileSync(destino, archivo.buffer);
 
       const datos = fs.statSync(destino);
 
@@ -207,7 +171,6 @@ export class QrDocsController {
         url: `${process.env.PORTAL_BASE_URL || ''}/QRDocs/${encodeURIComponent(nombre)}`,
       });
     } catch (error) {
-      limpiarTemporales(files);
       return res.status(500).send({ message: 'Error al guardar el documento' });
     }
   }
