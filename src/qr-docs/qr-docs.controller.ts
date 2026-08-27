@@ -143,7 +143,11 @@ export class QrDocsController {
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${encodeURIComponent(archivo)}"`,
-      'Cache-Control': 'public, max-age=300',
+      /* Sin caché: estos documentos se reemplazan conservando el nombre, así
+         que la dirección no cambia nunca. Si el navegador o Cloudflare
+         guardaran una copia, seguirían entregando la versión anterior después
+         de un reemplazo. Se prefiere que cada visita pida el archivo actual. */
+      'Cache-Control': 'no-store, must-revalidate',
     });
 
     return new StreamableFile(fs.createReadStream(ruta));
