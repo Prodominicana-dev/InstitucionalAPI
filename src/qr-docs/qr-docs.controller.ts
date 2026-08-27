@@ -6,26 +6,31 @@ import {
   Param,
   Body,
   Res,
+  StreamableFile,
+  NotFoundException,
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { Response } from 'express';
 import { validateUser } from 'src/validation/validation';
 
 const CryptoJS = require('crypto-js');
+const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
 
-/* Destino de los PDF de los códigos QR: public/QRDocs del portal.
-   En producción resuelve a /var/www/Institucional/public/QRDocs.
+/* Destino de los PDF de los códigos QR: public/QRDocs dentro de la propia API.
+   En producción resuelve a /var/www/InstitucionalAPI/public/QRDocs.
 
-   Es una carpeta propia, y no la de documentos, porque aquella la administra
-   el módulo de documentos, que borra archivos al editar o eliminar registros.
-   En QRDocs no escribe nadie más que este módulo. */
+   Se guarda aquí y no en la carpeta del portal, siguiendo el mismo esquema del
+   módulo de perfiles de países: cada proyecto escribe solo dentro de sí mismo,
+   sin depender de los permisos del otro. El archivo se entrega después por el
+   endpoint de descarga de este mismo módulo. */
 function carpetaDestino(): string {
   if (process.env.QR_DOCS_PATH) return process.env.QR_DOCS_PATH;
-  const directorioPadre = path.dirname(process.cwd());
-  return path.join(directorioPadre, 'Institucional', 'public', 'QRDocs');
+  return path.join(process.cwd(), 'public', 'QRDocs');
 }
 
 /* Copia del archivo anterior antes de cada reemplazo. Se guarda dentro de la
@@ -33,6 +38,35 @@ function carpetaDestino(): string {
 function carpetaRespaldos(): string {
   return path.join(process.cwd(), 'qr-backups');
 }
+
+/* Carpeta temporal donde multer escribe el archivo por streaming antes de
+   moverlo a su nombre definitivo.
+
+   Vive dentro de la propia carpeta de destino, igual que en el módulo de
+   perfiles de países: así comparte permisos y volumen con ella, y el traslado
+   posterior es un rename instantáneo en vez de una copia entre discos. */
+function carpetaTemporal(): string {
+  return path.join(carpetaDestino(), 'tmp');
+}
+
+/* Multer escribe directamente en disco, sin retener el archivo completo en
+   memoria. Es el mismo esquema del módulo de perfiles de países. */
+const almacenamientoEnDisco = diskStorage({
+  destination: (req: any, file: any, cb: any) => {
+    try {
+      const temporal = carpetaTemporal();
+      if (!fs.existsSync(temporal)) {
+        fs.mkdirSync(temporal, { recursive: true });
+      }
+      cb(null, temporal);
+    } catch (error) {
+      cb(error, '');
+    }
+  },
+  /* Nombre único para que dos subidas simultáneas no se pisen */
+  filename: (req: any, file: any, cb: any) =>
+    cb(null, `${uuidv4()}-${file.originalname}`),
+});
 
 /* Copias que se conservan de cada documento. Una sola: la versión que se acaba
    de sustituir, que es la que sirve para deshacer un reemplazo equivocado. Las
@@ -88,6 +122,33 @@ function nombreSeguro(nombre: string): string {
 
 @Controller('apiv2/qr-docs')
 export class QrDocsController {
+  /* Entrega el PDF de un código QR.
+
+     Es la dirección a la que el portal desvía las direcciones impresas. Se
+     envía en flujo, sin cargar el archivo en memoria, igual que el módulo de
+     perfiles de países. */
+  @Get('file/:nombre')
+  descargarDocumento(
+    @Param('nombre') nombre: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
+    /* basename descarta cualquier intento de salir de la carpeta con ../ */
+    const archivo = path.basename(decodeURIComponent(nombre));
+    const ruta = path.join(carpetaDestino(), archivo);
+
+    if (!fs.existsSync(ruta) || !fs.statSync(ruta).isFile()) {
+      throw new NotFoundException('El documento no existe');
+    }
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="${encodeURIComponent(archivo)}"`,
+      'Cache-Control': 'public, max-age=300',
+    });
+
+    return new StreamableFile(fs.createReadStream(ruta));
+  }
+
   /* Listado de los PDF disponibles en la carpeta de los códigos QR */
   @Get()
   async listarDocumentos(@Res() res) {
@@ -104,7 +165,7 @@ export class QrDocsController {
             name: nombre,
             size: datos.size,
             updatedAt: datos.mtime,
-            url: `${process.env.PORTAL_BASE_URL || ''}/QRDocs/${encodeURIComponent(nombre)}`,
+            url: `${process.env.API_BASE_URL || ''}/apiv2/qr-docs/file/${encodeURIComponent(nombre)}`,
           };
         })
         .sort((a: any, b: any) => a.name.localeCompare(b.name));
@@ -119,18 +180,28 @@ export class QrDocsController {
 
   /* Sube un PDF nuevo o reemplaza uno existente conservando su nombre.
 
-     Se usa el interceptor sin opciones, igual que los módulos de documentos y
-     eventos: el archivo llega en memoria y se escribe de una vez. Es la forma
-     que ya funciona en este servidor. */
+     El archivo se escribe en disco a medida que llega y luego se traslada a su
+     nombre definitivo, igual que en el módulo de perfiles de países. */
   @Post()
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(
+    FilesInterceptor('files', 1, { storage: almacenamientoEnDisco }),
+  )
   async subirDocumento(@UploadedFiles() files, @Body() body: any, @Res() res) {
+    /* Si la subida se rechaza, el archivo ya está escrito en el temporal y hay
+       que descartarlo para que no se acumule. */
+    const descartarTemporales = () => {
+      (files ?? []).forEach((file: any) => {
+        if (file?.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      });
+    };
+
     try {
       const _id = res.req.headers.authorization;
       const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
       const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
       const auth0Token = await validateUser(idDecrypted, 'create:transparency');
       if (!auth0Token) {
+        descartarTemporales();
         return res.status(401).send({ message: 'Unauthorized' });
       }
 
@@ -142,6 +213,7 @@ export class QrDocsController {
 
       const archivo = files[0];
       if (archivo.mimetype !== 'application/pdf') {
+        descartarTemporales();
         return res
           .status(400)
           .send({ message: 'Solo se admiten archivos en formato PDF' });
@@ -159,7 +231,10 @@ export class QrDocsController {
 
       if (existia) respaldar(destino, nombre);
 
-      fs.writeFileSync(destino, archivo.buffer);
+      /* Traslado del temporal a su nombre definitivo: al estar ambos en la
+         misma carpeta, es instantáneo y el PDF nunca queda a medias en la
+         dirección que abre el código QR. */
+      await fs.promises.rename(archivo.path, destino);
 
       const datos = fs.statSync(destino);
 
@@ -168,9 +243,10 @@ export class QrDocsController {
         size: datos.size,
         updatedAt: datos.mtime,
         replaced: existia,
-        url: `${process.env.PORTAL_BASE_URL || ''}/QRDocs/${encodeURIComponent(nombre)}`,
+        url: `${process.env.API_BASE_URL || ''}/apiv2/qr-docs/file/${encodeURIComponent(nombre)}`,
       });
     } catch (error) {
+      descartarTemporales();
       return res.status(500).send({ message: 'Error al guardar el documento' });
     }
   }
