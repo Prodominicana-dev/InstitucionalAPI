@@ -3,6 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { log } from 'console';
 import nodemailer from 'nodemailer';
 
+// Colores de las rutas de Mujer Exporta
+const RUTA_COLORS: Record<string, { primary: string; light: string; name: string }> = {
+  aprender: { primary: '#3D63D8', light: '#d8e0f7', name: 'Aprender' },
+  impulsar: { primary: '#F2665E', light: '#fce0df', name: 'Impulsar' },
+  exportar: { primary: '#2FB7C8', light: '#d5f1f4', name: 'Exportar' },
+  conectar: { primary: '#F39A3D', light: '#fdebd8', name: 'Conectar' },
+};
+
 @Injectable()
 export class MailService {
   constructor(private mailerService: MailerService) { }
@@ -166,6 +174,113 @@ export class MailService {
       return { message: 'Emails enviados correctamente' };
     } catch (error) {
       console.error('Error al enviar el correo de feedback:', error.message || error);
+    }
+  }
+
+  // ==========================================
+  // MUJER EXPORTA - Métodos de correo
+  // ==========================================
+
+  /**
+   * Envía correo de bienvenida al suscriptor de Mujer Exporta
+   */
+  async meWelcome(email: string, name: string) {
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        from: 'Mujer Exporta+ <mujerexportamas@prodominicana.gob.do>',
+        subject: '¡Bienvenida a Mujer Exporta+!',
+        template: './meWelcome',
+        context: {
+          name,
+          year: new Date().getFullYear(),
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Error al enviar correo de bienvenida ME:', error.message || error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Envía notificación de nueva iniciativa a todos los suscriptores activos
+   */
+  async meNewInitiative(
+    subscribers: Array<{ email: string; name: string; unsubscribeToken: string }>,
+    initiative: {
+      title: string;
+      description: string;
+      ruta: string;
+      tipo: string;
+      autor: string;
+      url: string;
+      endDate?: Date;
+    }
+  ) {
+    try {
+      const rutaColors = RUTA_COLORS[initiative.ruta] || RUTA_COLORS.aprender;
+
+      const emailPromises = subscribers.map(subscriber =>
+        this.mailerService.sendMail({
+          to: subscriber.email,
+          from: 'Mujer Exporta+ <mujerexportamas@prodominicana.gob.do>',
+          subject: `Nueva iniciativa: ${initiative.title}`,
+          template: './meNewInitiative',
+          context: {
+            subscriberName: subscriber.name,
+            title: initiative.title,
+            description: initiative.description,
+            ruta: rutaColors.name,
+            rutaColor: rutaColors.primary,
+            rutaLightColor: rutaColors.light,
+            tipo: initiative.tipo,
+            autor: initiative.autor,
+            initiativeUrl: initiative.url,
+            endDate: initiative.endDate
+              ? new Date(initiative.endDate).toLocaleDateString('es-DO', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })
+              : null,
+            unsubscribeUrl: `https://prodominicana.gob.do/mujer-exporta/unsubscribe/${subscriber.unsubscribeToken}`,
+            year: new Date().getFullYear(),
+          },
+        })
+      );
+
+      const results = await Promise.allSettled(emailPromises);
+      const sent = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      console.log(`ME: Notificaciones enviadas: ${sent}, fallidas: ${failed}`);
+      return { sent, failed };
+    } catch (error) {
+      console.error('Error al enviar notificaciones ME:', error.message || error);
+      return { sent: 0, failed: subscribers.length, error: error.message };
+    }
+  }
+
+  /**
+   * Envía confirmación de cancelación de suscripción
+   */
+  async meUnsubscribe(email: string, name: string) {
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        from: 'Mujer Exporta+ <mujerexportamas@prodominicana.gob.do>',
+        subject: 'Suscripción cancelada - Mujer Exporta+',
+        template: './meUnsubscribe',
+        context: {
+          name,
+          year: new Date().getFullYear(),
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Error al enviar confirmación de cancelación ME:', error.message || error);
+      return { success: false, error: error.message };
     }
   }
 

@@ -305,3 +305,40 @@ model Feedback {
   reviewedBy  String?
   reviewedAt  DateTime?
 }
+
+// Mujer Exporta - Iniciativas
+model MeInitiative {
+  id              String    @id @default(uuid())
+  ruta            String    // aprender, impulsar, exportar, conectar
+  subtema         String?
+  tipo            String    // Documento, Página, Curso, Servicio, etc.
+  autor           String
+  url             String
+  publicoObjetivo String?   // Exclusivo para mujeres, Mixto
+  priorizacion    String?   // Permanente institucional, Periódico, etc.
+  nivel           String?   // Básico, Intermedio, Avanzado
+  tags            String[]
+  es              Json      // { title, description }
+  en              Json?     // { title, description }
+  status          Boolean   @default(true)
+  startDate       DateTime?
+  endDate         DateTime?
+  created_At      DateTime  @default(now())
+  updated_At      DateTime?
+  created_By      String?
+  updated_By      String?
+}
+
+// Mujer Exporta - Suscriptores
+model MeSubscriber {
+  id               String    @id @default(uuid())
+  name             String
+  email            String    @unique
+  company          String?
+  phone            String?
+  sector           String?
+  status           Boolean   @default(true)  // true = activo, false = cancelado
+  unsubscribeToken String    @unique @default(uuid())
+  created_At       DateTime  @default(now())
+  unsubscribed_At  DateTime?
+}
