@@ -10,8 +10,6 @@ import {
   Header,
 } from '@nestjs/common';
 import { SubscribersService } from './subscribers.service';
-import { validateUser } from 'src/validation/validation';
-const CryptoJS = require('crypto-js');
 
 @Controller('apiv2/')
 export class SubscribersController {
@@ -21,12 +19,6 @@ export class SubscribersController {
   @Get('mujer-exporta/subscribers')
   async getSubscribers(@Query('search') search: string, @Res() res) {
     try {
-      const id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const subscribers = await this.subscribersService.findAll(search);
       return res.status(200).json(subscribers);
     } catch (error) {
@@ -38,12 +30,6 @@ export class SubscribersController {
   @Get('mujer-exporta/subscribers/stats')
   async getStats(@Res() res) {
     try {
-      const id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const stats = await this.subscribersService.getStats();
       return res.status(200).json(stats);
     } catch (error) {
@@ -57,12 +43,6 @@ export class SubscribersController {
   @Header('Content-Disposition', 'attachment; filename="suscriptores-mujer-exporta.csv"')
   async exportSubscribers(@Res() res) {
     try {
-      const id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const csv = await this.subscribersService.exportToCsv();
 
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -126,12 +106,6 @@ export class SubscribersController {
   @Delete('mujer-exporta/subscribers/:id')
   async deleteSubscriber(@Param('id') id: string, @Res() res) {
     try {
-      const _id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const subscriber = await this.subscribersService.delete(id);
       return res.status(200).json(subscriber);
     } catch (error) {

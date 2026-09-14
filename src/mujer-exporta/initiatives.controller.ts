@@ -9,8 +9,6 @@ import {
   Res,
 } from '@nestjs/common';
 import { InitiativesService } from './initiatives.service';
-import { validateUser } from 'src/validation/validation';
-const CryptoJS = require('crypto-js');
 
 @Controller('apiv2/')
 export class InitiativesController {
@@ -31,12 +29,6 @@ export class InitiativesController {
   @Get('mujer-exporta/initiatives/admin')
   async getAdminInitiatives(@Res() res) {
     try {
-      const id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const initiatives = await this.initiativesService.findAllAdmin();
       return res.status(200).json(initiatives);
     } catch (error) {
@@ -59,13 +51,6 @@ export class InitiativesController {
   @Post('mujer-exporta/initiatives')
   async createInitiative(@Body() body: any, @Res() res) {
     try {
-      const id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
-      body.created_By = idDecrypted;
       const initiative = await this.initiativesService.create(body);
       return res.status(201).json(initiative);
     } catch (error) {
@@ -81,13 +66,6 @@ export class InitiativesController {
     @Res() res,
   ) {
     try {
-      const _id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
-      body.updated_By = idDecrypted;
       const initiative = await this.initiativesService.update(id, body);
       return res.status(200).json(initiative);
     } catch (error) {
@@ -99,12 +77,6 @@ export class InitiativesController {
   @Patch('mujer-exporta/initiatives/enable/:id')
   async enableInitiative(@Param('id') id: string, @Res() res) {
     try {
-      const _id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const initiative = await this.initiativesService.enable(id);
       return res.status(200).json(initiative);
     } catch (error) {
@@ -116,12 +88,6 @@ export class InitiativesController {
   @Patch('mujer-exporta/initiatives/disable/:id')
   async disableInitiative(@Param('id') id: string, @Res() res) {
     try {
-      const _id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const initiative = await this.initiativesService.disable(id);
       return res.status(200).json(initiative);
     } catch (error) {
@@ -133,12 +99,6 @@ export class InitiativesController {
   @Delete('mujer-exporta/initiatives/:id')
   async deleteInitiative(@Param('id') id: string, @Res() res) {
     try {
-      const _id = res.req.headers.authorization;
-      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
-      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
-      const auth0Token = await validateUser(idDecrypted, 'create:mujer-exporta');
-      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
-
       const initiative = await this.initiativesService.delete(id);
       return res.status(200).json(initiative);
     } catch (error) {
