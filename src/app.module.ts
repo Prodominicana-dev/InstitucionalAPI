@@ -16,8 +16,8 @@ import { ServiceModule } from './service/service.module';
 import { ExportModule } from './export/export.module';
 import { ProductModule } from './product/product.module';
 import { SectorModule } from './sector/sector.module';
-// import { DocsModule } from './docs/docs.module'; // Temporalmente deshabilitado - requiere poppler
-// import { QrDocsModule } from './qr-docs/qr-docs.module'; // Temporalmente deshabilitado - requiere poppler
+import { DocsModule } from './docs/docs.module';
+import { QrDocsModule } from './qr-docs/qr-docs.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import {MailModule} from './mail/mail.module';
 import { FeedbackModule } from './feeback/feeback.module';
@@ -42,8 +42,8 @@ import { MujerExportaModule } from './mujer-exporta/mujer-exporta.module';
     ExportModule,
     ProductModule,
     SectorModule,
-    // DocsModule, // Temporalmente deshabilitado
-    // QrDocsModule, // Temporalmente deshabilitado
+    DocsModule,
+    QrDocsModule,
     ScheduleModule,
     MailModule,
     MujerExportaModule,
