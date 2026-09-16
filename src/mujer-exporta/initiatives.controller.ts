@@ -47,6 +47,20 @@ export class InitiativesController {
     }
   }
 
+  /* Seed - Migrar recursos estáticos */
+  @Post('mujer-exporta/initiatives/seed')
+  async seedInitiatives(@Body() body: any, @Res() res) {
+    try {
+      if (!body.recursos || !Array.isArray(body.recursos)) {
+        return res.status(400).json({ error: 'Se requiere un array de recursos' });
+      }
+      const result = await this.initiativesService.seed(body.recursos);
+      return res.status(201).json(result);
+    } catch (error) {
+      return res.status(error.status || 500).json({ error: error.message });
+    }
+  }
+
   /* Crear iniciativa */
   @Post('mujer-exporta/initiatives')
   async createInitiative(@Body() body: any, @Res() res) {

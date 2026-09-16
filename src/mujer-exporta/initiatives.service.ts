@@ -189,6 +189,42 @@ export class InitiativesService {
     }
   }
 
+  /* Seed - Migrar recursos estáticos a la base de datos */
+  async seed(recursos: any[]): Promise<{ created: number; errors: number }> {
+    let created = 0;
+    let errors = 0;
+
+    for (const recurso of recursos) {
+      try {
+        await this.prisma.meInitiative.create({
+          data: {
+            ruta: recurso.ruta,
+            subtema: recurso.subtema || null,
+            tipo: recurso.tipo,
+            autor: recurso.autor,
+            url: recurso.url,
+            publicoObjetivo: recurso.publicoObjetivo || null,
+            priorizacion: recurso.priorizacion || null,
+            nivel: recurso.nivel || null,
+            tags: recurso.tags || [],
+            es: {
+              title: recurso.titulo,
+              description: recurso.descripcion,
+            },
+            status: true,
+            created_By: 'seed',
+          },
+        });
+        created++;
+      } catch (error) {
+        console.error(`Error al crear recurso: ${recurso.titulo}`, error.message);
+        errors++;
+      }
+    }
+
+    return { created, errors };
+  }
+
   /* Obtener iniciativas públicas (filtradas por status y vigencia) */
   async findAllPublic(lang: string): Promise<any[]> {
     try {
