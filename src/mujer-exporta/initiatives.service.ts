@@ -55,19 +55,11 @@ export class InitiativesService {
     }
   }
 
-  /* Enviar notificaciones a todos los suscriptores activos */
+  /* Enviar notificaciones a todos los suscriptores activos y al equipo interno */
   private async sendNotificationsToSubscribers(initiative: MeInitiative): Promise<void> {
     try {
-      const subscribers = await this.subscribersService.getActiveSubscribers();
-
-      if (subscribers.length === 0) {
-        console.log('ME: No hay suscriptores activos para notificar');
-        return;
-      }
-
       const esMetadata = initiative.es as { title?: string; description?: string };
-
-      const result = await this.mailService.meNewInitiative(subscribers, {
+      const initiativeData = {
         title: esMetadata.title || 'Nueva iniciativa',
         description: esMetadata.description || '',
         ruta: initiative.ruta,
@@ -75,7 +67,21 @@ export class InitiativesService {
         autor: initiative.autor,
         url: initiative.url,
         endDate: initiative.endDate,
-      });
+        createdBy: initiative.created_By,
+      };
+
+      // 1. Notificar al equipo interno (todos@prodominicana.gob.do)
+      await this.mailService.meTeamNotification(initiativeData);
+
+      // 2. Notificar a los suscriptores externos
+      const subscribers = await this.subscribersService.getActiveSubscribers();
+
+      if (subscribers.length === 0) {
+        console.log('ME: No hay suscriptores activos para notificar');
+        return;
+      }
+
+      const result = await this.mailService.meNewInitiative(subscribers, initiativeData);
 
       console.log(`ME: Notificaciones enviadas a ${result.sent} suscriptores`);
     } catch (error) {

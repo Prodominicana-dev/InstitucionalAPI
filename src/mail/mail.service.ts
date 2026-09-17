@@ -251,6 +251,61 @@ export class MailService {
   }
 
   /**
+   * Envía notificación interna al equipo cuando se publica una nueva iniciativa
+   */
+  async meTeamNotification(initiative: {
+    title: string;
+    description: string;
+    ruta: string;
+    tipo: string;
+    autor: string;
+    url: string;
+    endDate?: Date;
+    createdBy?: string;
+  }) {
+    const teamEmail = 'todos@prodominicana.gob.do';
+    const rutaColors = RUTA_COLORS[initiative.ruta] || RUTA_COLORS.aprender;
+
+    try {
+      await this.mailerService.sendMail({
+        to: teamEmail,
+        from: 'Mujer Exporta+ <mujerexportamas@prodominicana.gob.do>',
+        subject: `[Mujer Exporta+] Nueva iniciativa: ${initiative.title}`,
+        template: './meTeamNotification',
+        context: {
+          title: initiative.title,
+          description: initiative.description,
+          ruta: rutaColors.name,
+          rutaColor: rutaColors.primary,
+          rutaLightColor: rutaColors.light,
+          tipo: initiative.tipo,
+          autor: initiative.autor,
+          initiativeUrl: initiative.url,
+          endDate: initiative.endDate
+            ? new Date(initiative.endDate).toLocaleDateString('es-DO', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })
+            : null,
+          createdBy: initiative.createdBy || 'Sistema',
+          createdAt: new Date().toLocaleString('es-DO', {
+            dateStyle: 'full',
+            timeStyle: 'short',
+          }),
+          year: new Date().getFullYear(),
+        },
+      });
+
+      console.log('ME: Notificación enviada al equipo (todos@prodominicana.gob.do)');
+      return { success: true };
+    } catch (error) {
+      console.error('Error al enviar notificación al equipo ME:', error.message || error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
    * Envía notificación de nueva iniciativa a todos los suscriptores activos
    */
   async meNewInitiative(
