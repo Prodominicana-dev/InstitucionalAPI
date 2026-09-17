@@ -184,7 +184,7 @@ export class MailService {
   /**
    * Envía correo de bienvenida al suscriptor de Mujer Exporta
    */
-  async meWelcome(email: string, name: string) {
+  async meWelcome(email: string, name: string, unsubscribeToken: string) {
     try {
       await this.mailerService.sendMail({
         to: email,
@@ -193,12 +193,59 @@ export class MailService {
         template: './meWelcome',
         context: {
           name,
+          unsubscribeUrl: `https://prodominicana.gob.do/mujer-exporta/unsubscribe/${unsubscribeToken}`,
           year: new Date().getFullYear(),
         },
       });
       return { success: true };
     } catch (error) {
       console.error('Error al enviar correo de bienvenida ME:', error.message || error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Envía notificación a los administradores cuando hay una nueva suscripción
+   */
+  async meAdminNotification(subscriber: {
+    name: string;
+    email: string;
+    company?: string;
+    phone?: string;
+    sector?: string;
+  }) {
+    const adminEmails = [
+      'carolinaperez@prodominicana.gob.do',
+      'nikaulisfeliz@prodominicana.gob.do',
+    ];
+
+    try {
+      const emailPromises = adminEmails.map(adminEmail =>
+        this.mailerService.sendMail({
+          to: adminEmail,
+          from: 'Mujer Exporta+ <mujerexportamas@prodominicana.gob.do>',
+          subject: `Nueva suscripción: ${subscriber.name}`,
+          template: './meAdminNotification',
+          context: {
+            name: subscriber.name,
+            email: subscriber.email,
+            company: subscriber.company,
+            phone: subscriber.phone,
+            sector: subscriber.sector,
+            registrationDate: new Date().toLocaleString('es-DO', {
+              dateStyle: 'full',
+              timeStyle: 'short',
+            }),
+            year: new Date().getFullYear(),
+          },
+        })
+      );
+
+      await Promise.all(emailPromises);
+      console.log('ME: Notificación enviada a administradores');
+      return { success: true };
+    } catch (error) {
+      console.error('Error al enviar notificación a admins ME:', error.message || error);
       return { success: false, error: error.message };
     }
   }

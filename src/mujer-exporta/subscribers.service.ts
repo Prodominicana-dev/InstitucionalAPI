@@ -33,8 +33,21 @@ export class SubscribersService {
             },
           });
 
-          // Enviar correo de bienvenida
-          await this.mailService.meWelcome(reactivated.email, reactivated.name);
+          // Enviar correo de bienvenida con enlace de cancelación
+          await this.mailService.meWelcome(
+            reactivated.email,
+            reactivated.name,
+            reactivated.unsubscribeToken,
+          );
+
+          // Notificar a los administradores
+          await this.mailService.meAdminNotification({
+            name: reactivated.name,
+            email: reactivated.email,
+            company: reactivated.company,
+            phone: reactivated.phone,
+            sector: reactivated.sector,
+          });
 
           return reactivated;
         }
@@ -55,8 +68,21 @@ export class SubscribersService {
         },
       });
 
-      // Enviar correo de bienvenida
-      await this.mailService.meWelcome(subscriber.email, subscriber.name);
+      // Enviar correo de bienvenida con enlace de cancelación
+      await this.mailService.meWelcome(
+        subscriber.email,
+        subscriber.name,
+        subscriber.unsubscribeToken,
+      );
+
+      // Notificar a los administradores
+      await this.mailService.meAdminNotification({
+        name: subscriber.name,
+        email: subscriber.email,
+        company: subscriber.company,
+        phone: subscriber.phone,
+        sector: subscriber.sector,
+      });
 
       return subscriber;
     } catch (error) {
