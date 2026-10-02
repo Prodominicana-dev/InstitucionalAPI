@@ -58,9 +58,15 @@ export class NewsletterService {
           ...dto,
           html: dto.html ? sanitizeHtml(dto.html, SANITIZE_OPTS) : undefined,
           publishDate: dto.publishDate ? new Date(dto.publishDate) : undefined,
-          scheduledSendDate: dto.scheduledSendDate
-            ? new Date(dto.scheduledSendDate)
-            : undefined,
+          // Distinguir "no viene" de "viene vacio": sin esto, mandar null para
+          // quitar la programacion se traducia a undefined y la fecha se
+          // quedaba puesta para siempre.
+          scheduledSendDate:
+            dto.scheduledSendDate === undefined
+              ? undefined
+              : dto.scheduledSendDate
+                ? new Date(dto.scheduledSendDate)
+                : null,
           updated_At: new Date(),
         },
       });
