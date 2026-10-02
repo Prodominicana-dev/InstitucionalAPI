@@ -32,7 +32,7 @@ import { PrismaService } from '../prisma/prisma.service';
     }),
   ],
   providers: [MailService, FeedbackService, PrismaService],
-  exports: [MailService],
+  exports: [MailService, MailerModule],
   controllers: [MailController], // 👈 export for DI
 })
 export class MailModule {}

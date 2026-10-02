@@ -64,6 +64,7 @@ model News {
   created_At DateTime?    @default(now())
   updated_At DateTime?
   status     Boolean?     @default(true)
+  featured   Boolean?     @default(false)
   category   NewsCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   categoryId String
   created_By String?
@@ -341,4 +342,102 @@ model MeSubscriber {
   unsubscribeToken String    @unique @default(uuid())
   created_At       DateTime  @default(now())
   unsubscribed_At  DateTime?
+}
+
+// Proeconomia - Boletin
+
+model Newsletter {
+  id                String             @id @default(uuid())
+  title             String
+  titleEn           String?
+  subject           String
+  html              String
+  state             String             @default("draft") // draft | scheduled | published | sent
+  cover             String?
+  tags              String[]
+  publishDate       DateTime?
+  scheduledSendDate DateTime?
+  sentAt            DateTime?
+  totalSent         Int                @default(0)
+  totalOpened       Int                @default(0)
+  totalClicks       Int                @default(0)
+  created_At        DateTime?          @default(now())
+  updated_At        DateTime?
+  status            Boolean?           @default(true)
+  created_By        String?
+  updated_By        String?
+  opens             NewsletterOpen[]
+  clicks            NewsletterClick[]
+}
+
+model NewsletterSubscriber {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  name              String?
+  status            Boolean            @default(true) // true = activo, false = cancelado
+  unsubscribeToken  String             @unique @default(uuid())
+  unsubscribeReason String?
+  ipAddress         String?
+  userAgent         String?
+  created_At        DateTime           @default(now())
+  unsubscribed_At   DateTime?
+  opens             NewsletterOpen[]
+  clicks            NewsletterClick[]
+}
+
+model NewsletterOpen {
+  id           String                @id @default(uuid())
+  newsletter   Newsletter            @relation(fields: [newsletterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  newsletterId String
+  subscriber   NewsletterSubscriber? @relation(fields: [subscriberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subscriberId String?
+  openedAt     DateTime              @default(now())
+  ipAddress    String?
+  userAgent    String?
+}
+
+model NewsletterClick {
+  id           String                @id @default(uuid())
+  newsletter   Newsletter            @relation(fields: [newsletterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  newsletterId String
+  subscriber   NewsletterSubscriber? @relation(fields: [subscriberId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subscriberId String?
+  url          String
+  clickedAt    DateTime              @default(now())
+  ipAddress    String?
+  userAgent    String?
+}
+
+// Proeconomia - Portadas diarias e indicadores
+
+model NewspaperCover {
+  id         String    @id @default(uuid())
+  image      String
+  media      String
+  link       String?
+  date       DateTime? @default(now())
+  created_At DateTime? @default(now())
+  updated_At DateTime?
+  status     Boolean?  @default(true)
+  created_By String?
+  updated_By String?
+}
+
+model EconomicIndicator {
+  id         String    @id @default(uuid())
+  key        String    @unique // usd | eur | oil | freight
+  label      String
+  labelEn    String
+  value      String
+  note       String?
+  noteEn     String?
+  order      Int?
+  // Horas que el valor se considera vigente. Pasadas, la pagina publica deja
+  // de mostrar la cifra: es preferible un hueco a un dato viejo disfrazado de
+  // actual. Diario para divisas y petroleo, semanal para el flete.
+  maxAgeHours Int?     @default(24)
+  created_At DateTime? @default(now())
+  updated_At DateTime?
+  status     Boolean?  @default(true)
+  updated_By String?
 }

@@ -22,6 +22,13 @@ import { ScheduleModule } from './schedule/schedule.module';
 import {MailModule} from './mail/mail.module';
 import { FeedbackModule } from './feeback/feeback.module';
 import { MujerExportaModule } from './mujer-exporta/mujer-exporta.module';
+// Proeconomia / Radar Economico
+import { ScheduleModule as NestScheduleModule } from '@nestjs/schedule';
+import { NewsFeaturedModule } from './news-featured/news-featured.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
+import { NewsletterSubscriberModule } from './newsletter-subscriber/subscriber.module';
+import { NewspaperCoverModule } from './newspaper-cover/newspaper-cover.module';
+import { EconomicIndicatorModule } from './economic-indicator/economic-indicator.module';
 // import { RatingServiceService } from './rating-service/rating-service.service';
 // import { RatingServiceModule } from './rating-service/rating-service.module';
 
@@ -31,6 +38,7 @@ import { MujerExportaModule } from './mujer-exporta/mujer-exporta.module';
     FeedbackModule,
     SubsectionModule,
     DocumentsModule,
+    NewsFeaturedModule,
     NewsModule,
     FilesModule,
     EventsModule,
@@ -47,6 +55,11 @@ import { MujerExportaModule } from './mujer-exporta/mujer-exporta.module';
     ScheduleModule,
     MailModule,
     MujerExportaModule,
+    NestScheduleModule.forRoot(),
+    NewsletterModule,
+    NewsletterSubscriberModule,
+    NewspaperCoverModule,
+    EconomicIndicatorModule,
     // RatingServiceModule
   ],
   controllers: [AppController],
