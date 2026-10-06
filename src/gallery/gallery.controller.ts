@@ -378,9 +378,16 @@ export class GalleryController {
   @Get('/photo/limit')
   async findLimitPhotos(@Res() res: Response) {
     try {
-      const gallery = await this.galleryService.findAll();
+      const galleries = await this.galleryService.findAll();
+      if (!galleries || galleries.length === 0)
+        return res.status(404).json({ error: 'Gallery not found' });
+      // Tomar la galeria mas reciente ACTIVA que realmente tenga fotos,
+      // para no devolver vacio cuando la ultima solo tiene portada.
+      const gallery = galleries.find(
+        (g: any) => g.status !== false && Array.isArray(g.photo) && g.photo.length > 0,
+      );
       if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
-      const photos = await this.galleryService.findAllPhotos(gallery[0].id);
+      const photos = await this.galleryService.findAllPhotos(gallery.id);
       return res.status(200).json(photos.slice(0, 5));
     } catch (error) {
       console.log(error);
