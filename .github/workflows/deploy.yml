@@ -1,0 +1,83 @@
+name: Deploy API to Remote Server
+
+# El servidor institucional no acepta SSH entrante desde internet, así que el
+# deploy va al revés: un runner self-hosted instalado en el propio servidor sale
+# hacia GitHub y ejecuta estos pasos localmente. No hace falta abrir puertos.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Permite relanzar el deploy a mano desde la pestaña Actions
+
+# El repositorio es público: NO agregar el evento pull_request. Un fork podría
+# ejecutar código arbitrario en el servidor de producción. Solo `push` a main,
+# que únicamente pueden generar personas con permiso de escritura.
+
+concurrency:
+  group: deploy-api-production
+  cancel-in-progress: false # Nunca cortar un deploy a medias
+
+jobs:
+  deploy:
+    # Etiqueta propia: este job debe caer en el runner de la API, no en el del front.
+    runs-on: [self-hosted, linux, institucional-api]
+    timeout-minutes: 20
+
+    env:
+      APP_DIR: /var/www/InstitucionalAPI
+
+    # Shell de login para que se cargue el PATH del usuario (nvm, pm2, etc.).
+    # Como servicio systemd el runner arranca con un entorno mínimo y sin esto
+    # no encuentra node ni pm2.
+    defaults:
+      run:
+        shell: bash -leo pipefail {0}
+
+    steps:
+      - name: Mostrar versiones
+        run: |
+          echo "node:  $(node -v)"
+          echo "npm:   $(npm -v)"
+          echo "pm2:   $(pm2 -v)"
+          echo "user:  $(whoami)"
+
+      - name: Actualizar código
+        run: |
+          cd "$APP_DIR"
+          git fetch --prune origin
+          # ff-only a propósito: si la rama del servidor divergió, o si hay
+          # cambios locales que se perderían, el deploy FALLA en vez de
+          # sobrescribir.
+          #
+          # NUNCA poner aquí `git reset --hard` ni `git clean`. Además del .env,
+          # borrarían event-forms/formularios.json, que la API ESCRIBE EN
+          # CALIENTE (guarda el formulario de cada evento) pese a estar
+          # versionado. Ese archivo contiene datos de producción.
+          git merge --ff-only "origin/${GITHUB_REF_NAME}"
+          git log -1 --oneline
+
+      - name: Instalar dependencias
+        run: |
+          cd "$APP_DIR"
+          # install y no `ci`: `ci` borra node_modules entero y exige el lockfile
+          # sincronizado. El repo tiene package-lock.json y yarn.lock a la vez,
+          # pero el servidor usa npm.
+          npm install --no-audit --no-fund
+
+      - name: Compilar
+        run: |
+          cd "$APP_DIR"
+          # `build` = prisma generate && nest build.
+          # Genera el cliente de Prisma; NO corre migraciones, así que este
+          # deploy nunca altera la base de datos. Si cambia el esquema, la
+          # migración se hace a mano y aparte.
+          npm run build
+
+      - name: Recargar PM2
+        run: |
+          cd "$APP_DIR"
+          # Recarga por NOMBRE y no con un archivo de ecosystem: el proceso en
+          # producción corre en cluster_mode con `npm start`, y la recarga
+          # gradual evita dejar el portal sin API.
+          pm2 reload InstitucionalAPI
+          pm2 describe InstitucionalAPI | head -20
