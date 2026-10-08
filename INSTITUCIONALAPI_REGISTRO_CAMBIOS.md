@@ -1,5 +1,28 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-08 (noche) — Tasa del dolar desde el Banco Central
+
+`src/economic-indicator/exchange-rate.service.ts`: trabajo programado que
+actualiza solo el indicador `usd`. Cada 4 horas y una vez al arrancar.
+
+- **Via sin credenciales**, la que usa por dentro su propia pagina de tasas:
+  `POST https://www.bancentral.gov.do/Home/GetActualExchangeRate`.
+  ⚠️ Hay que pedir antes `/SectorExterno/HistoricoTasas` para recoger sus
+  cookies de sesion: sin ellas responde **200 con el cuerpo vacio**.
+  El otro host, `api.bancentral.gov.do`, SI exige credenciales.
+- Toma la **tasa de venta**. Solo el dolar: el euro no sale por esta via y se
+  sigue cargando a mano.
+- **Si falla, no borra nada.** Deja el valor anterior y lo registra. Pasada su
+  vigencia, el indicador se marca desactualizado solo, que es lo que se quiere.
+- No es una API publicada, es la trastienda de una web: el dia que la cambien,
+  dejara de traer datos. Por eso no se le da mas confianza de la que merece.
+
+⛔ **No funciona todavia en produccion.** El FortiGate de la institucion tiene
+`bancentral.gov.do` **bloqueado por categoria** (devuelve su "Fortiguard SDNS
+Blocked Page"); desde el servidor, `curl` recibe un reset y Node da
+`ECONNRESET`. Comprobado el 8-oct. El codigo queda listo y empezara a funcionar
+el dia que redes abra esa salida, sin tocar nada.
+
 ## 2026-10-08 — Portadas diarias: sección
 
 - `NewspaperCover` recibe la columna opcional `section`, que guarda la clave de
