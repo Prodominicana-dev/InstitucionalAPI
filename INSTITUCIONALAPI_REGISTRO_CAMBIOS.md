@@ -1,5 +1,21 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-08 — Portadas diarias: sección
+
+- `NewspaperCover` recibe la columna opcional `section`, que guarda la clave de
+  la sección de Noticias Pro a la que pertenece la portada (`exportación`,
+  `inversión`, `internacional`, `finanzas`). Sin valor, la portada sale en
+  todas las secciones.
+- Pasa por el DTO, el servicio y el controlador, en crear y en editar.
+- SQL aditivo e idempotente en `prisma/sql/proeconomia_seccion_portadas.sql`.
+  **Hay que correrlo en cada base antes de desplegar**, porque este repo no
+  versiona `prisma/migrations`.
+
+El enlace de la noticia **no** tocó la API: viaja dentro de `metadata` y
+`findAll`/`findOneById` ya devuelven ese objeto entero.
+
+Verificado: `nest build` 0.
+
 ## 2026-10-01 — Proeconomía / Radar Económico
 
 Apartado nuevo bajo el menú Novedades de prodominicana.gob.do: boletín con

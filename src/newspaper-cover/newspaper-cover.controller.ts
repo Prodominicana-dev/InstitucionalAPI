@@ -71,6 +71,7 @@ export class NewspaperCoverController {
       const cover = await this.newspaperCoverService.create({
         media: body.media,
         link: body.link,
+        section: body.section,
         date: body.date,
         created_By: body.created_By,
         image: sanitizedName,
@@ -137,6 +138,7 @@ export class NewspaperCoverController {
       const updateData: any = {
         media: body.media,
         link: body.link,
+        section: body.section,
         date: body.date,
         updated_By: body.updated_By,
       };

@@ -415,6 +415,9 @@ model NewspaperCover {
   image      String
   media      String
   link       String?
+  // A que seccion de Noticias Pro pertenece la portada. Guarda la clave de
+  // la seccion, no su rotulo: exportación | inversión | internacional | finanzas
+  section    String?
   date       DateTime? @default(now())
   created_At DateTime? @default(now())
   updated_At DateTime?

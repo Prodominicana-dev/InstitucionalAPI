@@ -10,6 +10,7 @@ export class NewspaperCoverService {
   async create(data: {
     media: string;
     link?: string;
+    section?: string;
     date?: any;
     created_By?: string;
     image: string;
@@ -23,6 +24,7 @@ export class NewspaperCoverService {
     data: Partial<{
       media: string;
       link: string;
+      section: string;
       date: any;
       updated_By: string;
       image: string;
