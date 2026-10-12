@@ -1,5 +1,54 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-12 — Euro y petroleo automaticos; el dolar pasa a compra y venta
+
+Los cuatro indicadores de Noticias Pro llevaban en `0.00` desde que se sembraron
+el 8-oct, con `updated_At` en nulo: nadie les habia escrito nunca, ni a mano ni
+por codigo. En pantalla eso sale como "No disponible", que es lo que el equipo
+reporto como "los commodities no funcionan".
+
+**Euro** (`exchange-rate.service.ts`). El Banco Central SI publica euro, aunque
+no en el endpoint del dolar: esta en la serie de tasas convertibles que alimenta
+su pagina de historico.
+
+    POST /Home/GetAllConvertibleExchangeRates
+    {"FilterFrequency":"Diario","FilterCurrencies":[8],
+     "FromDate":"...","ToDate":"...","SortBy":"ExchangeRateDate","SortOrder":"desc"}
+
+`FilterCurrencies: [8]` es EURO; los codigos los da `POST /Home/GetExchangeCurrencies`.
+⚠️ `SortOrder` **no se aplica**: la respuesta viene siempre ascendente, asi que el
+dato vigente es el ultimo del arreglo, no el primero. Se pide una ventana de 15
+dias porque el Banco Central publica con retraso y no publica fines de semana.
+
+**Petroleo WTI** (`oil-price.service.ts`, nuevo). Del grafico publico de Yahoo
+Finance, `CL=F`. ⚠️ Sin `user-agent` de navegador responde **429**.
+
+**Dolar: ahora compra y venta**, en un solo valor con el formato `61.12 / 61.82`
+y la nota "Compra / Venta". El modelo guarda un string, asi que no hizo falta
+tocar el esquema ni el front.
+
+⚠️ **Y cambia de fuente: ahora se lee de la PORTADA del sitio**, no de
+`GetActualExchangeRate`. Ese endpoint responde **200 con el cuerpo vacio** cuando
+se le llama desde Node, y responde bien al mismo tiempo desde `curl`. Se probaron
+cookies, content-type, user-agent, x-requested-with, referer, accept-encoding,
+HTTP/1.1 y HTTP/2, conexion sin keep-alive, `node:https` en vez de `fetch`, token
+antiforgery y las dos paginas del sitio: ninguna cosa lo cambia. La portada si se
+lee desde Node y trae las dos cifras rotuladas
+(`<small>Compra</small><h5>61.1168</h5>`). Por eso tambien se dejo de depender de
+sus cookies de sesion, que no hacian falta.
+
+**El flete maritimo sigue manual**: no hay fuente publica gratuita (FBX y Drewry
+son de pago). Se carga desde el panel.
+
+Verificado contra la base local, con los cuatro en `0.00` antes de arrancar:
+`nest build` 0, y tras el arranque `usd = 61.12 / 61.82`, `eur = 68.49`,
+`oil = 93.71`, los tres con `stale: false` en `GET /apiv2/economic-indicator`.
+`freight` queda en `0.00` y `stale: true`, como se espera.
+
+⚠️ Los valores caducan a las 24 horas (`maxAgeHours`), asi que el cron de 4 horas
+los mantiene vivos solos; el flete seguira venciendose cada dia hasta que alguien
+lo teclee.
+
 ## 2026-10-12 — El anterior/siguiente ya no cruza entre Noticias y Noticias Pro
 
 `getPrevNextNews` (`GET /apiv2/:lang/news/prnxt/:id`) recorria la lista completa,
