@@ -39,7 +39,7 @@ export class EconomicIndicatorService {
     return (await this.findAll()).filter((i) => i.stale);
   }
 
-  // Actualizar un indicador por su key (usd | eur | oil | freight)
+  // Actualizar un indicador por su key (usd | eur | oil)
   async updateByKey(
     key: string,
     data: Partial<{

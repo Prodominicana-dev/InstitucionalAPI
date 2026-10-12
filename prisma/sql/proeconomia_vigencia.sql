@@ -16,12 +16,8 @@ BEGIN;
 ALTER TABLE "EconomicIndicator"
   ADD COLUMN IF NOT EXISTS "maxAgeHours" INTEGER DEFAULT 24;
 
--- Divisas y petroleo: se actualizan a diario.
+-- Las tres se actualizan a diario.
 UPDATE "EconomicIndicator" SET "maxAgeHours" = 24
   WHERE "key" IN ('usd', 'eur', 'oil') AND "maxAgeHours" IS DISTINCT FROM 24;
-
--- Flete maritimo: carga manual y el indice de referencia es semanal.
-UPDATE "EconomicIndicator" SET "maxAgeHours" = 168
-  WHERE "key" = 'freight' AND "maxAgeHours" IS DISTINCT FROM 168;
 
 COMMIT;

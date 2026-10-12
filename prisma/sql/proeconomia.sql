@@ -147,15 +147,14 @@ CREATE TABLE IF NOT EXISTS "EconomicIndicator" (
 CREATE UNIQUE INDEX IF NOT EXISTS "EconomicIndicator_key_key"
   ON "EconomicIndicator" ("key");
 
--- 7. Las cuatro filas del ticker, para que la pantalla del admin tenga
+-- 7. Las tres filas del ticker, para que la pantalla del admin tenga
 --    algo que editar desde el primer momento. ON CONFLICT las deja
 --    intactas si ya existen.
 INSERT INTO "EconomicIndicator" ("id", "key", "label", "labelEn", "value", "note", "noteEn", "order")
 VALUES
   (md5(random()::TEXT || clock_timestamp()::TEXT), 'usd',     'Dolar RD',       'USD RD',           '0.00', 'Referencia diaria',     'Daily reference',     1),
   (md5(random()::TEXT || clock_timestamp()::TEXT), 'eur',     'Euro RD',        'EUR RD',           '0.00', 'Referencia diaria',     'Daily reference',     2),
-  (md5(random()::TEXT || clock_timestamp()::TEXT), 'oil',     'Petroleo WTI',   'WTI Oil',          '0.00', 'Precio por barril',     'Price per barrel',    3),
-  (md5(random()::TEXT || clock_timestamp()::TEXT), 'freight', 'Flete maritimo', 'Maritime freight', '0.00', 'Contenedor referencial','Reference container', 4)
+  (md5(random()::TEXT || clock_timestamp()::TEXT), 'oil',     'Petroleo WTI',   'WTI Oil',          '0.00', 'Precio por barril',     'Price per barrel',    3)
 ON CONFLICT ("key") DO NOTHING;
 
 COMMIT;

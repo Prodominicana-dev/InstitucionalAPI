@@ -1,5 +1,20 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-12 — Fuera el indicador de Flete maritimo
+
+Se quita por decision suya: no hay fuente publica gratuita, asi que era el unico
+que exigia carga manual permanente.
+
+- `prisma/sql/proeconomia.sql`: la siembra ya no inserta la fila `freight`. Asi
+  no reaparece al correr el script en otro entorno.
+- `prisma/sql/proeconomia_vigencia.sql`: fuera el `UPDATE` que le ponia
+  `maxAgeHours = 168`.
+- Comentario de `economic-indicator.service.ts` al dia.
+
+La fila de produccion **se queda**, por decision suya: no se borra nada. Quien
+deja de pintarla es el front, que filtra esa clave en `IndicatorsRow.tsx`. Aqui
+solo se quita de la siembra, para que no reaparezca en un entorno nuevo.
+
 ## 2026-10-12 — Euro y petroleo automaticos; el dolar pasa a compra y venta
 
 Los cuatro indicadores de Noticias Pro llevaban en `0.00` desde que se sembraron
