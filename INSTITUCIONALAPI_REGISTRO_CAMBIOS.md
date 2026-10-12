@@ -1,5 +1,19 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-12 — El anterior/siguiente ya no cruza entre Noticias y Noticias Pro
+
+`getPrevNextNews` (`GET /apiv2/:lang/news/prnxt/:id`) recorria la lista completa,
+asi que desde el detalle de una noticia institucional se podia llegar a una de
+Noticias Pro y al contrario. Era el ultimo cruce que quedaba entre los dos
+apartados; estaba anotado como pendiente en el registro del front del 8-oct.
+
+Ahora se filtra la lista al mismo apartado que la noticia actual antes de buscar
+el vecino, por el campo `seccion`, igual que hacen las dos paginas publicas.
+Sin cambios de esquema ni de contrato: la respuesta sigue siendo
+`{prev: {id, title}, next: {id, title}}`.
+
+Verificado: `prisma generate` + `nest build` 0.
+
 ## 2026-10-08 (noche) — Tasa del dolar desde el Banco Central
 
 `src/economic-indicator/exchange-rate.service.ts`: trabajo programado que

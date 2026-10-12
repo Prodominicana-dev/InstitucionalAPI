@@ -225,7 +225,14 @@ export class NewsService {
 
   // Obtener los id y title de noticia previa y la siguiente a la noticia actual
   async getPrevNextNews(id: string, lang: string): Promise<any> {
-    const news = await this.findAll(lang);
+    const todas = await this.findAll(lang);
+    /* El anterior/siguiente no cruza de apartado: una noticia del portal no
+       lleva a una de Noticias Pro ni al contrario. Lo decide el campo seccion,
+       igual que el filtrado de las dos paginas publicas. */
+    const actual = todas.find((n: any) => n.id === id);
+    const news = todas.filter(
+      (n: any) => Boolean(n.seccion) === Boolean(actual?.seccion),
+    );
     const index = news.findIndex((n: any) => n.id === id);
     const prev = news[index + 1] || null;
     const next = news[index - 1] || null;
