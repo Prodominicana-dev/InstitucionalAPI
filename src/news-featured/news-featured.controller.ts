@@ -7,7 +7,10 @@ import {
   Body,
   Res,
 } from '@nestjs/common';
-import { NewsFeaturedService } from './news-featured.service';
+import {
+  NewsFeaturedService,
+  TOPE_DESTACADAS,
+} from './news-featured.service';
 import { validateUser } from 'src/validation/validation';
 import { Response } from 'express';
 
@@ -19,7 +22,7 @@ const CryptoJS = require('crypto-js');
 export class NewsFeaturedController {
   constructor(private readonly newsFeaturedService: NewsFeaturedService) {}
 
-  // Obtener la noticia destacada vigente (sin autenticación)
+  // Obtener las noticias destacadas vigentes (sin autenticación)
   @Get('news/featured')
   async getFeatured(@Res() res: Response, @Query('lang') lang = 'es') {
     try {
@@ -46,6 +49,12 @@ export class NewsFeaturedController {
       const auth0Token = await validateUser(idDecrypted, 'create:news');
       if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
       const news = await this.newsFeaturedService.setFeatured(id, body.featured);
+      // Sin cupo no se marca nada: el panel lo avisa con este mensaje.
+      if (!news)
+        return res.status(409).json({
+          error: `Ya hay ${TOPE_DESTACADAS} noticias destacadas`,
+          tope: TOPE_DESTACADAS,
+        });
       return res.status(200).json(news);
     } catch (error) {
       return res.status(500).json({ error });

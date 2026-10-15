@@ -1,5 +1,26 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-15 — Hasta cinco noticias destacadas
+
+El encabezado de Noticias Pro pasa a ser un carrusel, asi que la destacada deja
+de ser unica.
+
+- `news-featured.service.ts`: `findFeatured` devuelve el arreglo de destacadas,
+  ya aplanadas al idioma pedido y ordenadas por fecha descendente, en lugar de
+  una sola noticia. `setFeatured` deja de desmarcar las demas y en su lugar
+  comprueba el tope `TOPE_DESTACADAS` (5): si ya estan todas marcadas, devuelve
+  `null` sin tocar nada.
+- `news-featured.controller.ts`: ese `null` se traduce en **409** con el mensaje
+  `Ya hay 5 noticias destacadas`, que el panel muestra tal cual. El resto del
+  controlador no cambia: `GET apiv2/news/featured` sigue siendo publico y el
+  `PATCH apiv2/news/:id/featured` sigue exigiendo `create:news`.
+
+⚠️ `GET apiv2/news/featured` ahora responde un arreglo. Solo lo consume la
+pagina de Noticias Pro, que ya esta preparada para los dos formatos, pero el
+front conviene desplegarlo junto con la API.
+
+Verificado contra la base de desarrollo: `npx tsc --noEmit` sin errores y el
+endpoint devolviendo las cinco destacadas en el orden esperado.
 ## 2026-10-12 — Fuera el indicador de Flete maritimo
 
 Se quita por decision suya: no hay fuente publica gratuita, asi que era el unico
