@@ -1,5 +1,36 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-20 — Noticias Pro: el logo del cliente en los correos del boletin
+
+**Correo de bienvenida.** `newsletterWelcome.hbs` pintaba el logo institucional
+de ProDominicana en la cabecera azul, forzado a blanco con un filtro CSS. Ahora
+pinta el logo de Noticias Pro en su version blanca,
+`https://prodominicana.gob.do/images/noticias-pro/logo-correo-blanco.png`, en
+PNG y no en SVG porque muchos clientes de correo no pintan SVG. La linea
+"Boletin de Proeconomia" y el resto del correo no se tocan.
+
+**Cada edicion del boletin.** El HTML que guarda el editor del panel es solo el
+cuerpo: sin marca, sin ancho fijo y sin fondo, asi que la edicion llegaba como
+texto suelto a todo lo ancho de la ventana. `newsletter-send.service.ts` lo
+envuelve ahora en `wrapBrand()`: tarjeta de 600 px, cabecera azul `#01296d` con
+el logo y el cuerpo dentro. El envoltorio se aplica despues de reescribir los
+enlaces de seguimiento y antes de insertar el pixel de apertura, para que el
+pixel siga entrando antes de `</body>`.
+
+Verificado: `tsc --noEmit` sin errores y los dos correos pintados en el
+navegador.
+
+**Cada edicion lleva ya su enlace de baja.** Hasta ahora solo lo llevaba el
+correo de bienvenida, que ademas promete "el enlace al pie de cada edicion del
+boletin": el pie no existia. `wrapBrand()` recibe el token del suscriptor y
+cierra el correo con el mismo pie oscuro del correo de bienvenida —direccion,
+"Cancelar suscripcion" y el aviso de derechos—, apuntando a
+`${API_BASE_URL}/apiv2/newsletter-subscriber/unsubscribe/<token>`.
+
+El envoltorio se aplica **despues** de `rewriteLinks()`, asi que el enlace de
+baja no pasa por el seguimiento de clics: se abre directo contra la API y no
+cuenta como clic en la edicion.
+
 ## 2026-10-15 — Hasta cinco noticias destacadas
 
 El encabezado de Noticias Pro pasa a ser un carrusel, asi que la destacada deja
