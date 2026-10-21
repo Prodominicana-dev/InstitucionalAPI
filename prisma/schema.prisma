@@ -444,3 +444,59 @@ model EconomicIndicator {
   status     Boolean?  @default(true)
   updated_By String?
 }
+// Mujeres en Exportación - Programa del Encuentro Nacional
+// Tablas creadas con prisma/sql/mujeres_exportacion_programa.sql
+
+model MexSetting {
+  key   String @id
+  value String @default("")
+}
+
+model MexDay {
+  id       String       @id @default(uuid())
+  date     String       // YYYY-MM-DD
+  label    String       // "18 de noviembre"
+  subtitle String?
+  order    Int          @default(0)
+  sessions MexSession[]
+}
+
+model MexSession {
+  id          String              @id @default(uuid())
+  day         MexDay              @relation(fields: [dayId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  dayId       String
+  startTime   String              // HH:MM
+  endTime     String?
+  title       String
+  type        String?             // Panel, Plenaria, Networking...
+  location    String?
+  description String?
+  note        String?             // p. ej. "Solo por invitación"
+  visible     Boolean             @default(true)
+  speakers    MexSessionSpeaker[]
+  created_At  DateTime            @default(now())
+  updated_At  DateTime?
+
+  @@index([dayId])
+}
+
+model MexSpeaker {
+  id           String              @id @default(uuid())
+  name         String
+  position     String?
+  organization String?
+  bio          String?
+  photo        String?
+  sessions     MexSessionSpeaker[]
+}
+
+model MexSessionSpeaker {
+  session   MexSession @relation(fields: [sessionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sessionId String
+  speaker   MexSpeaker @relation(fields: [speakerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  speakerId String
+  role      String     @default("Panelista")
+  order     Int        @default(0)
+
+  @@id([sessionId, speakerId])
+}

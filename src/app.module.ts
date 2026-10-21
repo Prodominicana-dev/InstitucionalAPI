@@ -29,6 +29,7 @@ import { NewsletterModule } from './newsletter/newsletter.module';
 import { NewsletterSubscriberModule } from './newsletter-subscriber/subscriber.module';
 import { NewspaperCoverModule } from './newspaper-cover/newspaper-cover.module';
 import { EconomicIndicatorModule } from './economic-indicator/economic-indicator.module';
+import { MujeresExportacionModule } from './mujeres-exportacion/mujeres-exportacion.module';
 // import { RatingServiceService } from './rating-service/rating-service.service';
 // import { RatingServiceModule } from './rating-service/rating-service.module';
 
@@ -60,6 +61,7 @@ import { EconomicIndicatorModule } from './economic-indicator/economic-indicator
     NewsletterSubscriberModule,
     NewspaperCoverModule,
     EconomicIndicatorModule,
+    MujeresExportacionModule,
     // RatingServiceModule
   ],
   controllers: [AppController],
