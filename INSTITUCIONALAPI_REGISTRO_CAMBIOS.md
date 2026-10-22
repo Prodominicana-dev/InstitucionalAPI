@@ -1,5 +1,34 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-22 — Noticias Pro: script para volcar empleados internos al boletin
+
+La editora pidio que los colaboradores reciban el boletin sin tener que
+suscribirse. En la base no hay tabla de nomina, asi que la lista la entrega
+RRHH en un CSV y este script la vuelca en `NewsletterSubscriber`.
+
+- `importar-suscriptores.js` (raiz del repo, como `update-feedbacks.js`):
+  `node importar-suscriptores.js empleados.csv` simula y
+  `node importar-suscriptores.js empleados.csv --aplicar` da de alta.
+- Lee CSV con coma o punto y coma, con cabecera o sin ella, y descarta el BOM
+  de Excel. Busca las columnas "correo"/"email" y "nombre"/"name"; sin
+  cabecera, correo en la primera columna y nombre en la segunda. No lee .xlsx.
+- Normaliza el correo a minusculas y descarta duplicados e invalidos con el
+  mismo `EMAIL_REGEX` de `subscriber.service.ts`.
+- El alta va con `createMany` + `skipDuplicates` y no por
+  `SubscriberService.create()`: ese metodo manda el correo de bienvenida, y
+  estos empleados no se suscribieron. Decision del usuario.
+- A quien esta dado de baja no lo reactiva, solo lo reporta. Reactivarlo seria
+  devolverle un boletin que pidio no recibir.
+- Idempotente: la segunda pasada inserta 0.
+
+Verificado contra una base de usar y tirar con 7 filas sembradas (una ya
+suscrita, una dada de baja, una repetida, una sin correo y una con correo
+invalido): simula 2 altas, inserta 2, respeta la baja y la segunda pasada
+inserta 0. El `unsubscribeToken` sale uuid de 36 caracteres.
+
+Pendiente: ejecutarlo en produccion desde `/var/www/InstitucionalAPI`, para que
+Prisma lea el `DATABASE_URL` de ese `.env`, cuando RRHH entregue el CSV.
+
 ## 2026-10-22 — Noticias Pro: la marca del correo y el titular en modo oscuro
 
 **La marca.** El correo de bienvenida llevaba el logo de Noticias Pro en la
