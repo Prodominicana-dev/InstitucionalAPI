@@ -1,5 +1,36 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-10-22 — Noticias Pro: la marca del correo y el titular en modo oscuro
+
+**La marca.** El correo de bienvenida llevaba el logo de Noticias Pro en la
+cabecera, pero el texto seguia diciendo Proeconomia: el remitente, el asunto,
+el rotulo bajo el logo, el parrafo de confirmacion y el boton. El nombre de la
+seccion es Noticias Pro desde el 2026-10-07 y el enlace /proeconomia solo
+sobrevive como redireccion en el front.
+
+- `newsletter-mail.service.ts`: el remitente pasa de `Proeconomia
+  <no-reply@prodominicana.gob.do>` a `Noticias Pro <no-reply@...>` y el asunto
+  a "Gracias por suscribirse al boletin de Noticias Pro".
+- `newsletterWelcome.hbs`: titulo del documento, parrafo de confirmacion y
+  boton ("Explorar Noticias Pro") con la marca correcta; el boton apunta ya a
+  `/noticias-pro` y no a la redireccion. El rotulo bajo el logo pasa a "Boletin
+  economico" en lugar de repetir la marca que el propio logo ya dice.
+- `newsletter.hbs`: la plantilla de referencia tambien queda con el nombre
+  nuevo.
+
+**El titular en modo oscuro.** En Outlook movil con tema oscuro la tarjeta
+blanca se invierte a gris oscuro, pero el titular conservaba el azul `#01296d`
+del estilo en linea: azul oscuro sobre fondo oscuro, casi ilegible. Ahora el
+correo declara `color-scheme` y `supported-color-schemes` en `light dark` y el
+titular usa `#2B6CB0`, que se lee sobre el blanco original y sobre el gris que
+impone el cliente.
+
+Verificado: `tsc --noEmit` sin errores.
+
+Pendiente: `wrapBrand()` en `newsletter-send.service.ts` arma cada edicion con
+la misma tarjeta blanca y sin esas dos metas, asi que el boletin tiene todavia
+el problema del modo oscuro.
+
 ## 2026-10-20 — Noticias Pro: el logo del cliente en los correos del boletin
 
 **Correo de bienvenida.** `newsletterWelcome.hbs` pintaba el logo institucional

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 
-const FROM = 'Proeconomía <no-reply@prodominicana.gob.do>';
+const FROM = 'Noticias Pro <no-reply@prodominicana.gob.do>';
 
 /* Host publico de la API, sin el prefijo apiv2: misma convencion que
    qr-docs.controller.ts. */
@@ -22,7 +22,7 @@ export class NewsletterMailService {
       await this.mailerService.sendMail({
         from: FROM,
         to: email,
-        subject: 'Gracias por suscribirse al boletín de Proeconomía',
+        subject: 'Gracias por suscribirse al boletín de Noticias Pro',
         template: './newsletterWelcome',
         context: {
           name: name ?? email,
