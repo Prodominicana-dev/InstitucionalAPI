@@ -34,6 +34,91 @@ Pendiente antes de desplegar, en este orden:
 3. Desplegar el front y, en `/admin/banners`, pulsar "Importar los banners
    actuales" para cargar los tres que hoy tiene la home.
 
+## 2026-10-29 — Noticias Pro: envio diario a las 9:00 y arreglos del envio masivo
+
+La editora reporto que el boletin no sale todos los dias a las 9:00. No era un
+fallo: ese envio no existia. El cron de cada 5 minutos solo recoge boletines
+que una persona creo y programo a mano, y al terminar los marca `sent`, asi que
+cada edicion sale una vez. Al revisar ese camino salieron otros seis fallos.
+
+**Envio diario.** `newsletter-daily.service.ts` (nuevo), con
+`@Cron('0 9 * * 1-5', { timeZone: 'America/Santo_Domingo' })`: de lunes a
+viernes, porque el fin de semana no se publican noticias y no hay nada que
+anunciar. La zona va explicita porque el servidor puede estar en UTC. El
+cuerpo es solo un boton al apartado,
+`https://prodominicana.gob.do/noticias-pro`, que es lo que pidio el usuario:
+desde ahi se ven todas las noticias del dia. Crea una fila
+`Newsletter` con `tags: ['diario']` y la encola, asi que hereda la cabecera con
+logo, el enlace de baja, el pixel de apertura y las metricas del panel. No crea
+dos el mismo dia: busca la anterior por ese tag y compara el dia en hora de RD.
+La crea como `scheduled` con fecha de ahora, de modo que si el proceso muere
+entre crearla y enviarla, el cron de cada 5 minutos la recoge igual.
+
+Si no hay noticias nuevas no manda nada. "Nuevas" son las creadas desde la
+edicion anterior, con `status = true` y con `seccion` en su `metadata`, que es
+lo que distingue Noticias Pro del portal institucional (misma regla que
+`news.service.ts:234`). Ojo: se cuenta por `created_At`, asi que publicar una
+noticia vieja activando su `status` no cuenta como nueva y ese dia no sale
+correo.
+
+**Nadie recibe el mismo boletin dos veces.** Antes solo quedaba el contador
+`totalSent`, sin registro de a quien se le envio: si el relay fallaba a mitad
+de la lista, reintentar duplicaba el correo a los que ya lo tenian. Tabla nueva
+`NewsletterDelivery`, una fila por boletin y correo, escrita despues de cada
+tanda de 25. El envio arranca saltando a los que ya tienen fila y el indice
+unico `(newsletterId, email)` lo garantiza aunque el envio se dispare dos veces.
+Requiere `prisma/sql/newsletter_entregas.sql` ANTES de desplegar.
+
+**Un envio fallido ya no se marca como enviado.** Si habia destinatarios y no
+salio ni un correo, el boletin pasa a `failed` con un `logger.error` que nombra
+el relay. Antes quedaba `sent` con `totalSent = 0` y nadie se enteraba.
+
+**Un envio interrumpido se puede retomar.** `lockForSend` marcaba `sentAt` antes
+de enviar y dejaba el estado en `scheduled`: si el proceso moria a mitad, ni el
+cron (exige `sentAt` nulo) ni el boton podian retomarlo. Ahora marca `sending`,
+`sentAt` lo pone `markSent` al final, y un `sending` sin tocarse en 30 minutos
+se da por colgado y admite reintento.
+
+**El relay SMTP por variable de entorno.** `mail.module.ts` lo tenia escrito a
+mano (`10.25.1.68:587`), asi que la configuracion SMTP del servidor no se usaba.
+Ahora `MAIL_HOST`, `MAIL_PORT`, `MAIL_SECURE`, `MAIL_USER` y `MAIL_PASSWORD`,
+documentadas en `.env.mail.example`. Sin variables queda el mismo relay de
+antes, para no cambiar el correo que ya sale.
+
+**El `.env` se leia tarde.** `main.ts` importaba `AppModule` en la linea 2 y
+llamaba a `dotenv.config()` dentro de `bootstrap()`. Los imports corren antes,
+asi que los modulos que leen `process.env` al cargarse lo hacian sin el `.env`.
+Ahora `import 'dotenv/config'` va primero. Sin esto las variables del relay no
+se habrian leido nunca.
+
+**El correo del suscriptor se guarda normalizado.** El `@unique` de Prisma
+distingue mayusculas, asi que `Juan@x.com` y `juan@x.com` eran dos filas y la
+persona recibia cada boletin dos veces. Puede haber duplicados ya en la base:
+esto cubre las altas nuevas.
+
+**IP y navegador del alta, como prueba del consentimiento.** El esquema ya tenia
+los campos y no se llenaban. La IP real viene en `CF-Connecting-IP`: el sitio
+esta detras de Cloudflare y luego nginx, y no hay `trust proxy`, asi que `req.ip`
+era 127.0.0.1 para todo el trafico publico. (`newsletter-tracking.controller.ts`
+sigue guardando `req.ip` en aperturas y clics; no se toco.)
+
+**Tope de 5 altas por hora y por IP**, 429 a la sexta, en `rate-limit.ts`. El
+alta es publica y cada una dispara un correo de bienvenida desde el relay
+institucional: sin tope se pueden registrar correos ajenos en masa. El contador
+vive en memoria porque `ecosystem.config.js` arranca una sola instancia
+(`instances: 1`). Limites: se reinicia con pm2, y quien alcance el origen
+saltandose Cloudflare podria falsear esa cabecera.
+
+**`GET /apiv2/newsletter/diario/estado`** (admin, `create:news`): dice si el
+envio de las 9:00 saldria y cuantas noticias nuevas cuenta, sin crear ni mandar
+nada. Para comprobarlo sin esperar al dia siguiente.
+
+33 pruebas en verde (eran 7) y `tsc` sin errores. Los specs del boletin llevan
+un `jest.mock('sanitize-html')` porque arrastra `htmlparser2`, que es ESM y jest
+no transforma `node_modules`.
+
+Pendiente: el envio diario no tiene interruptor; pausarlo exige otro despliegue.
+
 ## 2026-10-22 — Noticias Pro: script para volcar empleados internos al boletin
 
 La editora pidio que los colaboradores reciban el boletin sin tener que

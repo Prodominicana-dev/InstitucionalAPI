@@ -163,4 +163,102 @@ describe('SubscriberService', () => {
     expect(result.success).toBe(true);
     expect(result.message).toMatch(/ya estaba cancelada/);
   });
+
+  // ─── Normalización del correo ────────────────────────────────────────────────
+
+  it('normaliza el correo a minúsculas y sin espacios antes de buscar y crear', async () => {
+    mockPrisma.newsletterSubscriber.findUnique.mockResolvedValue(null);
+    mockPrisma.newsletterSubscriber.create.mockResolvedValue({
+      id: 'uuid-5',
+      email: 'juan@example.com',
+      name: 'Juan',
+      unsubscribeToken: 'token-5',
+      status: true,
+    });
+
+    await service.create({ email: '  Juan@Example.COM ', name: 'Juan' });
+
+    expect(mockPrisma.newsletterSubscriber.findUnique).toHaveBeenCalledWith({
+      where: { email: 'juan@example.com' },
+    });
+    expect(mockPrisma.newsletterSubscriber.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ email: 'juan@example.com' }),
+    });
+  });
+
+  it('detecta el duplicado aunque el correo venga en mayúsculas', async () => {
+    mockPrisma.newsletterSubscriber.findUnique.mockResolvedValue({
+      id: 'uuid-1',
+      email: 'test@example.com',
+      status: true,
+    });
+
+    await expect(
+      service.create({ email: 'TEST@EXAMPLE.COM' }),
+    ).rejects.toMatchObject({ status: HttpStatus.CONFLICT });
+
+    expect(mockPrisma.newsletterSubscriber.create).not.toHaveBeenCalled();
+  });
+
+  // ─── Prueba de consentimiento ────────────────────────────────────────────────
+
+  it('guarda la IP y el navegador del alta', async () => {
+    mockPrisma.newsletterSubscriber.findUnique.mockResolvedValue(null);
+    mockPrisma.newsletterSubscriber.create.mockResolvedValue({
+      id: 'uuid-6',
+      email: 'ip@example.com',
+      unsubscribeToken: 'token-6',
+      status: true,
+    });
+
+    await service.create({
+      email: 'ip@example.com',
+      ipAddress: '10.0.0.9',
+      userAgent: 'Mozilla/5.0',
+    });
+
+    expect(mockPrisma.newsletterSubscriber.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        ipAddress: '10.0.0.9',
+        userAgent: 'Mozilla/5.0',
+      }),
+    });
+  });
+
+  // ─── Tope de altas por IP ────────────────────────────────────────────────────
+
+  it('bloquea con 429 la sexta alta desde la misma IP en una hora', async () => {
+    mockPrisma.newsletterSubscriber.findUnique.mockResolvedValue(null);
+    mockPrisma.newsletterSubscriber.create.mockImplementation(({ data }) =>
+      Promise.resolve({ ...data, id: 'x', unsubscribeToken: 'tok', status: true }),
+    );
+
+    for (let n = 0; n < 5; n++) {
+      await service.create({ email: `bot${n}@example.com`, ipAddress: '1.2.3.4' });
+    }
+
+    await expect(
+      service.create({ email: 'bot5@example.com', ipAddress: '1.2.3.4' }),
+    ).rejects.toMatchObject({ status: HttpStatus.TOO_MANY_REQUESTS });
+
+    expect(mockPrisma.newsletterSubscriber.create).toHaveBeenCalledTimes(5);
+  });
+
+  it('el cupo es por IP: otra IP sigue pudiendo suscribirse', async () => {
+    mockPrisma.newsletterSubscriber.findUnique.mockResolvedValue(null);
+    mockPrisma.newsletterSubscriber.create.mockImplementation(({ data }) =>
+      Promise.resolve({ ...data, id: 'x', unsubscribeToken: 'tok', status: true }),
+    );
+
+    for (let n = 0; n < 5; n++) {
+      await service.create({ email: `bot${n}@example.com`, ipAddress: '1.2.3.4' });
+    }
+
+    const otra = await service.create({
+      email: 'persona@example.com',
+      ipAddress: '5.6.7.8',
+    });
+
+    expect(otra.email).toBe('persona@example.com');
+  });
 });

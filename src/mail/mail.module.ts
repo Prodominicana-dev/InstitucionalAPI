@@ -12,11 +12,22 @@ import { PrismaService } from '../prisma/prisma.service';
   imports: [
     
     MailerModule.forRoot({
+      // Relay por variable de entorno. Estaba escrito a mano aqui, asi que la
+      // configuracion SMTP del servidor no se usaba. Sin variables queda el
+      // mismo relay interno de antes, para no cambiar el correo que ya sale.
       transport: {
-        host: '10.25.1.68',
-        port: 587,
-        secure: false,
-        ignoreTLS: true,
+        host: process.env.MAIL_HOST || '10.25.1.68',
+        port: Number(process.env.MAIL_PORT) || 587,
+        secure: process.env.MAIL_SECURE === 'true',
+        ignoreTLS: process.env.MAIL_SECURE !== 'true',
+        ...(process.env.MAIL_USER
+          ? {
+              auth: {
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASSWORD,
+              },
+            }
+          : {}),
       },
       defaults: {
         from: 'Institucional-No Reply <no-reply@prodominicana.gob.do>',

@@ -10,6 +10,9 @@ import { PrismaService } from '../prisma/prisma.service';
 const API_BASE_URL = process.env.API_BASE_URL || 'https://prodominicana.gob.do';
 const BATCH_SIZE = 25;
 const BATCH_DELAY_MS = 500;
+// Un envio marcado 'sending' que lleve mas de esto sin tocarse se da por
+// colgado (el proceso murio a mitad) y se puede reintentar.
+const STALE_SENDING_MS = 30 * 60 * 1000;
 
 /* Reescribe los href=http/https a la URL de tracking de clics */
 function rewriteLinks(html: string, nlId: string, token: string): string {
@@ -48,6 +51,12 @@ function wrapBrand(html: string, token: string): string {
 </table></td></tr></table></body></html>`;
 }
 
+/* Un envío 'sending' sin tocarse en STALE_SENDING_MS se da por colgado */
+function isStaleSending(newsletter: { updated_At?: Date | null }): boolean {
+  if (!newsletter.updated_At) return true;
+  return Date.now() - new Date(newsletter.updated_At).getTime() > STALE_SENDING_MS;
+}
+
 /* Construye el HTML personalizado para un suscriptor */
 function buildHtml(baseHtml: string, nlId: string, token: string): string {
   let html = rewriteLinks(baseHtml, nlId, token);
@@ -72,30 +81,51 @@ export class NewsletterSendService {
     if (!newsletter) return { queued: false, message: 'Boletín no encontrado' };
     if (newsletter.sentAt) return { queued: false, message: 'El boletín ya fue enviado' };
 
-    // Bloquear reenvíos fijando sentAt ahora
+    // Un envío en curso no se dispara dos veces: el cron pasa cada 5 min y el
+    // envío de una lista grande dura más que eso.
+    if (newsletter.state === 'sending' && !isStaleSending(newsletter)) {
+      return { queued: false, message: 'El boletín se está enviando' };
+    }
+
+    // Bloquear reenvíos marcándolo 'sending' ahora
     await this.newsletterService.lockForSend(id);
 
     // Ejecutar en segundo plano sin bloquear la petición
-    this._doSend(newsletter).catch((err) =>
-      this.logger.error(`Error en envío en segundo plano (${id}): ${err.message}`),
-    );
+    this._doSend(newsletter).catch(async (err) => {
+      this.logger.error(`Error en envío en segundo plano (${id}): ${err.message}`);
+      await this.newsletterService.markFailed(id).catch(() => undefined);
+    });
 
     return { queued: true, message: 'Envío en cola' };
   }
 
   /* Proceso real de envío en segundo plano */
   private async _doSend(newsletter: any): Promise<void> {
-    const subscribers = await this.prisma.newsletterSubscriber.findMany({
-      where: { status: true },
-      select: { email: true, unsubscribeToken: true },
-    });
+    const [subscribers, entregados] = await Promise.all([
+      this.prisma.newsletterSubscriber.findMany({
+        where: { status: true },
+        select: { email: true, unsubscribeToken: true },
+      }),
+      this.prisma.newsletterDelivery.findMany({
+        where: { newsletterId: newsletter.id },
+        select: { email: true },
+      }),
+    ]);
 
-    this.logger.log(`Enviando boletín "${newsletter.title}" a ${subscribers.length} suscriptores`);
+    // Un reintento tras un fallo del relay no vuelve a escribir a quien ya lo
+    // recibio: eso es lo que registra NewsletterDelivery.
+    const yaRecibieron = new Set(entregados.map((e) => e.email));
+    const pendientes = subscribers.filter((s) => !yaRecibieron.has(s.email));
+
+    this.logger.log(
+      `Enviando boletín "${newsletter.title}" a ${pendientes.length} suscriptores` +
+        (yaRecibieron.size > 0 ? ` (${yaRecibieron.size} ya lo recibieron)` : ''),
+    );
 
     let sent = 0;
 
-    for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
-      const batch = subscribers.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < pendientes.length; i += BATCH_SIZE) {
+      const batch = pendientes.slice(i, i + BATCH_SIZE);
 
       const results = await Promise.allSettled(
         batch.map((sub) => {
@@ -104,18 +134,42 @@ export class NewsletterSendService {
         }),
       );
 
-      sent += results.filter((r) => r.status === 'fulfilled').length;
-      const failed = results.filter((r) => r.status === 'rejected').length;
+      // Se anota la entrega solo de los que salieron, y antes de la siguiente
+      // tanda: si el proceso muere aqui, el reintento sabe donde se quedo.
+      const entregas = batch
+        .filter((_, n) => results[n].status === 'fulfilled')
+        .map((sub) => ({ newsletterId: newsletter.id, email: sub.email }));
+
+      if (entregas.length > 0) {
+        await this.prisma.newsletterDelivery.createMany({
+          data: entregas,
+          skipDuplicates: true,
+        });
+      }
+
+      sent += entregas.length;
+      const failed = results.length - entregas.length;
       if (failed > 0) this.logger.warn(`Tanda ${i / BATCH_SIZE + 1}: ${failed} errores`);
 
       // Pausa entre tandas, excepto la última
-      if (i + BATCH_SIZE < subscribers.length) {
+      if (i + BATCH_SIZE < pendientes.length) {
         await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
       }
     }
 
-    await this.newsletterService.markSent(newsletter.id, sent);
-    this.logger.log(`Boletín "${newsletter.title}" enviado. Total: ${sent}`);
+    // Si habia a quien enviar y no salio ni uno, el relay esta caido o
+    // rechazando: antes se marcaba 'sent' con totalSent 0 y nadie se enteraba.
+    if (sent === 0 && pendientes.length > 0) {
+      await this.newsletterService.markFailed(newsletter.id);
+      this.logger.error(
+        `Boletín "${newsletter.title}": no salió ningún correo de ${pendientes.length}. Revise el relay SMTP.`,
+      );
+      return;
+    }
+
+    const total = yaRecibieron.size + sent;
+    await this.newsletterService.markSent(newsletter.id, total);
+    this.logger.log(`Boletín "${newsletter.title}" enviado. Total: ${total}`);
   }
 
   /* Cron cada 5 min: detecta boletines programados con fecha vencida */

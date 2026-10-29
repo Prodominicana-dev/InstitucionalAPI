@@ -3,6 +3,7 @@ import { MailModule } from '../mail/mail.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { NewsletterService } from './newsletter.service';
 import { NewsletterSendService } from './newsletter-send.service';
+import { NewsletterDailyService } from './newsletter-daily.service';
 import { NewsletterMailService } from './newsletter-mail.service';
 import { NewsletterController } from './newsletter.controller';
 import { NewsletterTrackingController } from './newsletter-tracking.controller';
@@ -14,6 +15,7 @@ import { NewsletterTrackingController } from './newsletter-tracking.controller';
     NewsletterService,
     NewsletterMailService,
     NewsletterSendService,
+    NewsletterDailyService,
   ],
   controllers: [NewsletterController, NewsletterTrackingController],
 })

@@ -1,24 +1,45 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NewsletterMailService } from '../newsletter/newsletter-mail.service';
+import { RateLimitAltas } from './rate-limit';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 @Injectable()
 export class SubscriberService {
+  private readonly rateLimit = new RateLimitAltas();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly mailService: NewsletterMailService,
   ) {}
 
-  /* Alta de suscriptor. Reactiva si estaba dado de baja, 409 si ya está activo */
-  async create(data: { email: string; name?: string }) {
-    if (!data.email || !EMAIL_REGEX.test(data.email)) {
+  /* Alta de suscriptor. Reactiva si estaba dado de baja, 409 si ya está activo.
+     El correo se guarda normalizado: el @unique de Prisma distingue mayúsculas,
+     asi que sin esto Juan@x.com y juan@x.com son dos filas y la persona recibe
+     cada boletin dos veces. */
+  async create(data: {
+    email: string;
+    name?: string;
+    ipAddress?: string;
+    userAgent?: string;
+  }) {
+    // El tope va antes de validar: lo que se limita son las peticiones, no las
+    // altas correctas. Sin IP (el script de volcado interno) no se aplica.
+    if (data.ipAddress && this.rateLimit.excedido(data.ipAddress)) {
+      throw new HttpException(
+        'Demasiadas suscripciones desde esta conexión. Intente más tarde.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const email = (data.email ?? '').trim().toLowerCase();
+    if (!email || !EMAIL_REGEX.test(email)) {
       throw new HttpException('Formato de email inválido', HttpStatus.BAD_REQUEST);
     }
 
     const existing = await this.prisma.newsletterSubscriber.findUnique({
-      where: { email: data.email },
+      where: { email },
     });
 
     if (existing) {
@@ -31,6 +52,8 @@ export class SubscriberService {
             name: data.name ?? existing.name,
             unsubscribed_At: null,
             unsubscribeReason: null,
+            ipAddress: data.ipAddress ?? existing.ipAddress,
+            userAgent: data.userAgent ?? existing.userAgent,
           },
         });
         await this.mailService.newsletterWelcome(
@@ -48,7 +71,12 @@ export class SubscriberService {
     }
 
     const subscriber = await this.prisma.newsletterSubscriber.create({
-      data: { email: data.email, name: data.name },
+      data: {
+        email,
+        name: data.name,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+      },
     });
 
     await this.mailService.newsletterWelcome(

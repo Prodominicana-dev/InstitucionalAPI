@@ -139,11 +139,14 @@ export class NewsletterService {
     return this.prisma.newsletter.findUnique({ where: { id } });
   }
 
-  /* Bloquea un reenvío inmediato fijando sentAt */
+  /* Bloquea un reenvío inmediato marcando el boletín como 'sending'. No fija
+     sentAt: si el proceso muere a mitad del envio, antes quedaba con sentAt
+     puesto y state 'scheduled', y entonces ni el cron (exige sentAt null) ni el
+     boton podian retomarlo. Asi el estado queda a la vista y es reintentable. */
   async lockForSend(id: string) {
     return this.prisma.newsletter.update({
       where: { id },
-      data: { sentAt: new Date() },
+      data: { state: 'sending', updated_At: new Date() },
     });
   }
 
@@ -151,7 +154,17 @@ export class NewsletterService {
   async markSent(id: string, totalSent: number) {
     return this.prisma.newsletter.update({
       where: { id },
-      data: { state: 'sent', totalSent, updated_At: new Date() },
+      data: { state: 'sent', sentAt: new Date(), totalSent, updated_At: new Date() },
+    });
+  }
+
+  /* El envío no logró sacar ni un correo: queda en 'failed' y sin sentAt para
+     que se vea en el panel y se pueda reintentar. El cron no lo repesca solo
+     porque findDueScheduled solo mira 'scheduled'. */
+  async markFailed(id: string) {
+    return this.prisma.newsletter.update({
+      where: { id },
+      data: { state: 'failed', updated_At: new Date() },
     });
   }
 

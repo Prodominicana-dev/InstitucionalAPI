@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { NewsletterService } from './newsletter.service';
 import { NewsletterSendService } from './newsletter-send.service';
+import { NewsletterDailyService } from './newsletter-daily.service';
 import { CreateNewsletterDto, UpdateNewsletterDto } from './dto/newsletter.dto';
 import { validateUser } from 'src/validation/validation';
 const CryptoJS = require('crypto-js');
@@ -19,7 +20,27 @@ export class NewsletterController {
   constructor(
     private readonly newsletterService: NewsletterService,
     private readonly sendService: NewsletterSendService,
+    private readonly dailyService: NewsletterDailyService,
   ) {}
+
+  /* Admin: qué haría el envío diario de las 9:00 si se disparara ahora, sin
+     crear ni mandar nada. DEBE declararse antes de :id */
+  @Get('diario/estado')
+  async estadoDiario(@Res() res) {
+    try {
+      const _id = res.req.headers.authorization;
+      // Sin cabecera, decrypt lanza y caeria al catch como 500: eso es 401.
+      if (!_id) return res.status(401).json({ error: 'Unauthorized' });
+      const idBytes = CryptoJS.AES.decrypt(_id, process.env.CRYPTO_KEY);
+      const idDecrypted = idBytes.toString(CryptoJS.enc.Utf8);
+      const auth0Token = await validateUser(idDecrypted, 'create:news');
+      if (!auth0Token) return res.status(401).json({ error: 'Unauthorized' });
+      const estado = await this.dailyService.estado();
+      return res.status(200).json(estado);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 
   /* Admin: todos los boletines. DEBE declararse antes de :id */
   @Get('admin')

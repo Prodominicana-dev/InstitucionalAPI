@@ -352,7 +352,7 @@ model Newsletter {
   titleEn           String?
   subject           String
   html              String
-  state             String             @default("draft") // draft | scheduled | published | sent
+  state             String             @default("draft") // draft | scheduled | published | sending | failed | sent
   cover             String?
   tags              String[]
   publishDate       DateTime?
@@ -368,6 +368,19 @@ model Newsletter {
   updated_By        String?
   opens             NewsletterOpen[]
   clicks            NewsletterClick[]
+  deliveries        NewsletterDelivery[]
+}
+
+// Una fila por destinatario y boletin. El unique es lo que impide que un
+// reintento tras un fallo del relay mande el mismo boletin dos veces.
+model NewsletterDelivery {
+  id           String     @id @default(uuid())
+  newsletter   Newsletter @relation(fields: [newsletterId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  newsletterId String
+  email        String
+  sentAt       DateTime   @default(now())
+
+  @@unique([newsletterId, email])
 }
 
 model NewsletterSubscriber {

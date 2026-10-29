@@ -6,21 +6,28 @@ import {
   Param,
   Body,
   Query,
+  Req,
   Res,
 } from '@nestjs/common';
 import { SubscriberService } from './subscriber.service';
 import { validateUser } from 'src/validation/validation';
+import { clientIp } from './rate-limit';
 const CryptoJS = require('crypto-js');
 
 @Controller('apiv2/newsletter-subscriber')
 export class SubscriberController {
   constructor(private readonly subscriberService: SubscriberService) {}
 
-  /* Público: alta de suscriptor */
+  /* Público: alta de suscriptor. Guarda IP y navegador como prueba del
+     consentimiento: misma convencion que newsletter-tracking.controller.ts. */
   @Post()
-  async create(@Body() body: any, @Res() res) {
+  async create(@Body() body: any, @Req() req, @Res() res) {
     try {
-      const subscriber = await this.subscriberService.create(body);
+      const subscriber = await this.subscriberService.create({
+        ...body,
+        ipAddress: clientIp(req),
+        userAgent: req.headers['user-agent'],
+      });
       return res.status(201).json(subscriber);
     } catch (error) {
       return res.status(error.status || 500).json({ error: error.message });
