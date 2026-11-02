@@ -1,5 +1,39 @@
 # InstitucionalAPI — Registro de cambios
 
+## 2026-11-02 — Banners de la home administrables desde el admin
+
+Los banners del carrusel de la home estaban fijos en el codigo del front:
+agregar, quitar u ocultar uno exigia un cambio y un despliegue. Ahora se
+administran desde el admin y el API los entrega a la home.
+
+- Tabla nueva `Banner` (`prisma/schema.prisma` y `prisma/sql/banner.sql`):
+  imagen, titulo, enlace, si abre en pestana nueva, idioma (`es`, `en` o
+  `null` = todos), orden y `visible`. **Ocultar** pone `visible = false`: el
+  banner sigue guardado pero no sale en la home. **Eliminar** lo borra de la
+  base y borra su carpeta de imagenes.
+- Modulo `src/banner/` (`apiv2/banner`), con el mismo patron que
+  `newspaper-cover`:
+  - `GET /` publico: solo los visibles, con `?locale=es|en` opcional. Un banner
+    sin idioma sale en todos.
+  - `GET /admin` con autorizacion: todos, visibles y ocultos.
+  - `POST /`, `PATCH /:id`, `PATCH /:id/visibility`, `POST /reorder` y
+    `DELETE /:id`, con el permiso `create:news` como las portadas.
+  - `GET /:id/img/:name` sirve la imagen desde `public/banner/<id>/`. Usa
+    `path.basename` en el id y el nombre, para que no se pueda salir de la
+    carpeta con `..`.
+- La autorizacion se junto en un solo metodo `isAuthorized`, en vez de copiar
+  el bloque de cifrado y validacion en cada endpoint.
+
+Verificado: el modulo compila con TypeScript contra tipos equivalentes a los
+de Prisma. No se probo contra una base real ni se ejecuto `prisma generate`
+(en el entorno de pruebas no se pueden descargar los motores de Prisma).
+
+Pendiente antes de desplegar, en este orden:
+1. `psql "$DATABASE_URL" -f prisma/sql/banner.sql` en cada base.
+2. `npx prisma generate` y reiniciar el API.
+3. Desplegar el front y, en `/admin/banners`, pulsar "Importar los banners
+   actuales" para cargar los tres que hoy tiene la home.
+
 ## 2026-10-22 — Noticias Pro: script para volcar empleados internos al boletin
 
 La editora pidio que los colaboradores reciban el boletin sin tener que

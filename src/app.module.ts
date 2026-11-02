@@ -30,6 +30,7 @@ import { NewsletterSubscriberModule } from './newsletter-subscriber/subscriber.m
 import { NewspaperCoverModule } from './newspaper-cover/newspaper-cover.module';
 import { EconomicIndicatorModule } from './economic-indicator/economic-indicator.module';
 import { MujeresExportacionModule } from './mujeres-exportacion/mujeres-exportacion.module';
+import { BannerModule } from './banner/banner.module';
 // import { RatingServiceService } from './rating-service/rating-service.service';
 // import { RatingServiceModule } from './rating-service/rating-service.module';
 
@@ -62,6 +63,7 @@ import { MujeresExportacionModule } from './mujeres-exportacion/mujeres-exportac
     NewspaperCoverModule,
     EconomicIndicatorModule,
     MujeresExportacionModule,
+    BannerModule,
     // RatingServiceModule
   ],
   controllers: [AppController],

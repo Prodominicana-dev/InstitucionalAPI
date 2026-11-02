@@ -500,3 +500,24 @@ model MexSessionSpeaker {
 
   @@id([sessionId, speakerId])
 }
+
+// Banners de la home administrables desde el admin
+
+model Banner {
+  id         String    @id @default(uuid())
+  image      String
+  title      String
+  link       String?
+  external   Boolean   @default(true)
+  // 'es' | 'en'. null = sale en todos los idiomas.
+  locale     String?
+  order      Int       @default(0)
+  // false = oculto: sigue guardado pero no sale en la home.
+  visible    Boolean   @default(true)
+  created_At DateTime? @default(now())
+  updated_At DateTime?
+  created_By String?
+  updated_By String?
+
+  @@index([visible, order])
+}
