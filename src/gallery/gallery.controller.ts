@@ -47,14 +47,18 @@ export class GalleryController {
           fs.mkdirSync(pathFolder, { recursive: true });
         }
 
+        // La portada se reconoce por el nombre del archivo. Solo una vez: si una
+        // foto de la galeria se llamara igual, no debe pisar la portada.
+        let coverAssigned = false;
         await Promise.all(
           files.map(async (file, index) => {
-            const fileName = `${index}_${Date.now()}.${mime.extension(file.mimetype)}`;
+            const fileName = `${index}_${Date.now()}.${mime.extension(file.mimetype) || 'jpg'}`;
             const filePath = path.join(pathFolder, fileName);
 
             await fs.writeFileSync(filePath, file.buffer);
 
-            if (file.originalname === gallery.cover) {
+            if (!coverAssigned && file.originalname === gallery.cover) {
+              coverAssigned = true;
               // Guardar cover
               await this.galleryService.update(gallery.id, { cover: fileName });
             } else {
@@ -70,7 +74,7 @@ export class GalleryController {
         );
       }
 
-      return res.status(201).json({ message: 'Gallery created' });
+      return res.status(201).json({ message: 'Gallery created', id: gallery.id });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: error.message });
@@ -314,30 +318,31 @@ export class GalleryController {
       const gallery = await this.galleryService.getById(id);
       console.log(id);
       if (!gallery) return res.status(404).json({ error: 'Gallery not found' });
-      if (files) {
-        files.forEach(async (file) => {
-          const pathFolder = path.join(
-            process.cwd(),
-            `/public/gallery/${gallery.id}`,
-          );
-          if (!fs.existsSync(pathFolder)) {
-            fs.mkdirSync(pathFolder, { recursive: true });
-          }
-          const fileName = file.originalname;
-
-          const data: PhotoDto = {
-            name: fileName,
-            galleryId: gallery.id,
-            size: file.size.toString(),
-            created_By: body.created_By,
-          };
-          const photo = await this.galleryService.createPhoto(data);
-          if (photo)
-            await fs.writeFileSync(
-              path.join(pathFolder, fileName),
-              file.buffer,
-            );
-        });
+      if (files && files.length > 0) {
+        const pathFolder = path.join(
+          process.cwd(),
+          `/public/gallery/${gallery.id}`,
+        );
+        if (!fs.existsSync(pathFolder)) {
+          fs.mkdirSync(pathFolder, { recursive: true });
+        }
+        // Se espera a que todas queden guardadas antes de responder. Antes se
+        // respondia 201 sin esperar (forEach async): un fallo al guardar se
+        // perdia en silencio y el admin creia que las fotos se habian subido.
+        // El nombre es unico: con el nombre original, dos fotos con el mismo
+        // nombre (IMG_0001.jpg de carpetas distintas) se pisaban.
+        await Promise.all(
+          files.map(async (file, index) => {
+            const fileName = `${index}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${mime.extension(file.mimetype) || 'jpg'}`;
+            fs.writeFileSync(path.join(pathFolder, fileName), file.buffer);
+            await this.galleryService.createPhoto({
+              name: fileName,
+              galleryId: gallery.id,
+              size: file.size.toString(),
+              created_By: body.created_By,
+            });
+          }),
+        );
       }
       return res.status(201).json({ message: 'Photos added' });
     } catch (error) {
