@@ -486,11 +486,27 @@ model MexSession {
   description String?
   note        String?             // p. ej. "Solo por invitación"
   visible     Boolean             @default(true)
+  // Actividades traídas de la agenda de ProDominicana Capacita (null = cargada a mano)
+  capacitaId      Int?            @unique
+  capacitaTipo    String?         // id del tipo en Capacita -> MexCategory
+  speakerText     String?         // "instructor" de Capacita
+  registrationUrl String?         // enlace de inscripción en Capacita
+  isNew           Boolean         @default(false) // llegó en la última sincronización y nadie la ha revisado
   speakers    MexSessionSpeaker[]
   created_At  DateTime            @default(now())
   updated_At  DateTime?
 
   @@index([dayId])
+}
+
+// Categorías (tipos de evento) de Capacita: nombre y color llegan de Capacita;
+// customColor lo pone el admin del programa y la sincronización no lo toca.
+model MexCategory {
+  id          String    @id // id del tipo en Capacita (charla, panel...)
+  label       String
+  color       String
+  customColor String?
+  updated_At  DateTime? @updatedAt
 }
 
 model MexSpeaker {

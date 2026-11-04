@@ -17,6 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { validateUser } from 'src/validation/validation';
 import { MujeresExportacionService } from './mujeres-exportacion.service';
+import { MexCapacitaService } from './mujeres-exportacion-capacita.service';
 
 const fs = require('fs');
 const path = require('path');
@@ -30,7 +31,10 @@ const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp'];
 
 @Controller('apiv2/mujeres-exportacion')
 export class MujeresExportacionController {
-  constructor(private readonly service: MujeresExportacionService) {}
+  constructor(
+    private readonly service: MujeresExportacionService,
+    private readonly capacita: MexCapacitaService,
+  ) {}
 
   private async autorizado(res: Response): Promise<boolean> {
     const _id = res.req.headers.authorization;
@@ -114,6 +118,26 @@ export class MujeresExportacionController {
   @Get('admin')
   getAdmin(@Res() res: Response) {
     return this.protegido(res, 200, () => this.service.getAdmin());
+  }
+
+  // ---------- Capacita ----------
+
+  // Botón "Sincronizar con Capacita": trae los cambios al momento.
+  @Post('capacita/sync')
+  syncCapacita(@Res() res: Response) {
+    return this.protegido(res, 200, () => this.capacita.sincronizar());
+  }
+
+  // La actividad nueva se deja como está (oculta) y deja de marcarse como nueva.
+  @Patch('sessions/:id/reviewed')
+  markReviewed(@Param('id') id: string, @Res() res: Response) {
+    return this.protegido(res, 200, () => this.capacita.marcarRevisada(id));
+  }
+
+  // Color propio de una categoría; { color: null } vuelve al de Capacita.
+  @Patch('categories/:id')
+  setCategoryColor(@Param('id') id: string, @Body() body: any, @Res() res: Response) {
+    return this.protegido(res, 200, () => this.capacita.colorCategoria(id, body?.color ?? null));
   }
 
   @Put('settings')

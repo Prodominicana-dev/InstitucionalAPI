@@ -33,7 +33,11 @@ export class MujeresExportacionService {
   }
 
   // Días con sus sesiones (ordenadas por hora) y los ponentes de cada sesión.
+  // Las que vienen de Capacita llevan el color de su categoría (el propio del
+  // admin si lo puso, si no el de Capacita).
   async getDays(includeHidden: boolean) {
+    const categorias = await this.prismaService.mexCategory.findMany();
+    const colorDe = new Map(categorias.map((c) => [c.id, c.customColor || c.color]));
     const days = await this.prismaService.mexDay.findMany({
       orderBy: [{ order: 'asc' }, { date: 'asc' }],
       include: {
@@ -50,6 +54,7 @@ export class MujeresExportacionService {
       ...d,
       sessions: d.sessions.map(({ speakers, ...s }) => ({
         ...s,
+        categoryColor: s.capacitaTipo ? colorDe.get(s.capacitaTipo) || null : null,
         speakers: speakers.map((sp) => ({ ...sp.speaker, role: sp.role })),
       })),
     }));
@@ -60,16 +65,19 @@ export class MujeresExportacionService {
     if (settings.published !== '1') {
       return { settings: { title: settings.title, dates: settings.dates }, days: [], unpublished: true };
     }
-    return { settings, days: await this.getDays(false) };
+    // Solo los ajustes editables (no el estado interno de la sincronización).
+    const publicos = Object.fromEntries(AJUSTES.filter((k) => k in settings).map((k) => [k, settings[k]]));
+    return { settings: publicos, days: await this.getDays(false) };
   }
 
   async getAdmin() {
-    const [settings, days, speakers] = await Promise.all([
+    const [settings, days, speakers, categories] = await Promise.all([
       this.getSettings(),
       this.getDays(true),
       this.prismaService.mexSpeaker.findMany({ orderBy: { name: 'asc' } }),
+      this.prismaService.mexCategory.findMany({ orderBy: { label: 'asc' } }),
     ]);
-    return { settings, days, speakers };
+    return { settings, days, speakers, categories };
   }
 
   // Días
@@ -137,7 +145,15 @@ export class MujeresExportacionService {
     });
   }
 
+  // Las actividades de Capacita se editan allá; aquí solo se muestran u ocultan.
+  private async noDeCapacita(id: string, accion: string) {
+    const s = await this.prismaService.mexSession.findUnique({ where: { id }, select: { capacitaId: true } });
+    if (!s) throw new NotFoundException('Sesión no encontrada.');
+    if (s.capacitaId) throw new BadRequestException(`Esta actividad viene de Capacita: para ${accion}la hazlo en el admin de Capacita.`);
+  }
+
   async updateSession(id: string, body: any) {
+    await this.noDeCapacita(id, 'editar');
     const data = await this.validarSesion(body);
     return this.prismaService.$transaction(async (tx) => {
       await tx.mexSessionSpeaker.deleteMany({ where: { sessionId: id } });
@@ -148,11 +164,13 @@ export class MujeresExportacionService {
     });
   }
 
+  // Al mostrarla (o al ocultarla a propósito) deja de contar como nueva.
   setSessionVisible(id: string, visible: boolean) {
-    return this.prismaService.mexSession.update({ where: { id }, data: { visible: !!visible, updated_At: new Date() } });
+    return this.prismaService.mexSession.update({ where: { id }, data: { visible: !!visible, isNew: false, updated_At: new Date() } });
   }
 
-  deleteSession(id: string) {
+  async deleteSession(id: string) {
+    await this.noDeCapacita(id, 'eliminar');
     return this.prismaService.mexSession.delete({ where: { id } });
   }
 
