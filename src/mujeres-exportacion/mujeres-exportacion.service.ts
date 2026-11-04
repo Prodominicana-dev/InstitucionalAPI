@@ -164,6 +164,29 @@ export class MujeresExportacionService {
     });
   }
 
+  // Solo los ponentes de una sesión. Es lo único que se edita aquí de las
+  // actividades de Capacita: la sincronización nunca toca los ponentes.
+  async setSessionSpeakers(id: string, speakers: any) {
+    const sesion = await this.prismaService.mexSession.findUnique({ where: { id }, select: { id: true } });
+    if (!sesion) throw new NotFoundException('Sesión no encontrada.');
+    const enlaces = this.enlaces(speakers);
+    const existen = await this.prismaService.mexSpeaker.findMany({
+      where: { id: { in: enlaces.map((e) => e.speakerId) } },
+      select: { id: true },
+    });
+    const validos = new Set(existen.map((e) => e.id));
+    return this.prismaService.$transaction(async (tx) => {
+      await tx.mexSessionSpeaker.deleteMany({ where: { sessionId: id } });
+      return tx.mexSession.update({
+        where: { id },
+        data: {
+          updated_At: new Date(),
+          speakers: { create: enlaces.filter((e) => validos.has(e.speakerId)).map((e, i) => ({ ...e, order: i })) },
+        },
+      });
+    });
+  }
+
   // Al mostrarla (o al ocultarla a propósito) deja de contar como nueva.
   setSessionVisible(id: string, visible: boolean) {
     return this.prismaService.mexSession.update({ where: { id }, data: { visible: !!visible, isNew: false, updated_At: new Date() } });

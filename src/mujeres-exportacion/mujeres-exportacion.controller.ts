@@ -128,6 +128,12 @@ export class MujeresExportacionController {
     return this.protegido(res, 200, () => this.capacita.sincronizar());
   }
 
+  // Ponentes de una sesión (también de las que vienen de Capacita).
+  @Patch('sessions/:id/speakers')
+  setSessionSpeakers(@Param('id') id: string, @Body() body: any, @Res() res: Response) {
+    return this.protegido(res, 200, () => this.service.setSessionSpeakers(id, body?.speakers));
+  }
+
   // La actividad nueva se deja como está (oculta) y deja de marcarse como nueva.
   @Patch('sessions/:id/reviewed')
   markReviewed(@Param('id') id: string, @Res() res: Response) {
