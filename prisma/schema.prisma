@@ -486,6 +486,7 @@ model MexSession {
   description String?
   note        String?             // p. ej. "Solo por invitación"
   visible     Boolean             @default(true)
+  order       Int                 @default(0) // orden entre las que empiezan a la misma hora
   // Actividades traídas de la agenda de ProDominicana Capacita (null = cargada a mano)
   capacitaId      Int?            @unique
   capacitaTipo    String?         // id del tipo en Capacita -> MexCategory

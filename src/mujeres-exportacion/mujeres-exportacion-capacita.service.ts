@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { siguienteOrden } from './mujeres-exportacion.service';
 
 /* Trae al programa de Mujeres en Exportación las actividades de la agenda de
    ProDominicana Capacita cuyas fechas caen en los días del programa.
@@ -135,7 +136,8 @@ export class MexCapacitaService {
         await this.prismaService.mexSession.update({ where: { id }, data: { ...datos, updated_At: new Date() } });
         actualizadas++;
       } else {
-        await this.prismaService.mexSession.create({ data: { ...datos, capacitaId, visible: false, isNew: true } });
+        const order = await siguienteOrden(this.prismaService, dayId, startTime);
+        await this.prismaService.mexSession.create({ data: { ...datos, order, capacitaId, visible: false, isNew: true } });
         nuevas++;
       }
     }

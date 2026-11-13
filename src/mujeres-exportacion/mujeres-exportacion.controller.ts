@@ -177,6 +177,12 @@ export class MujeresExportacionController {
     return this.protegido(res, 201, () => this.service.createSession(body));
   }
 
+  // Antes que sessions/:id para que "order" no se tome como id.
+  @Patch('sessions/order')
+  reorderSessions(@Body() body: any, @Res() res: Response) {
+    return this.protegido(res, 200, () => this.service.reorderSessions(body?.ids));
+  }
+
   @Patch('sessions/:id/visible')
   setVisible(@Param('id') id: string, @Body() body: any, @Res() res: Response) {
     return this.protegido(res, 200, () => this.service.setSessionVisible(id, body.visible));

@@ -43,7 +43,7 @@ export class MujeresExportacionService {
       include: {
         sessions: {
           where: includeHidden ? {} : { visible: true },
-          orderBy: [{ startTime: 'asc' }, { created_At: 'asc' }],
+          orderBy: [{ startTime: 'asc' }, { order: 'asc' }, { created_At: 'asc' }],
           include: {
             speakers: { orderBy: { order: 'asc' }, include: { speaker: true } },
           },
@@ -140,9 +140,29 @@ export class MujeresExportacionService {
 
   async createSession(body: any) {
     const data = await this.validarSesion(body);
+    const order = await siguienteOrden(this.prismaService, data.dayId, data.startTime);
     return this.prismaService.mexSession.create({
-      data: { ...data, speakers: { create: this.enlaces(body.speakers) } },
+      data: { ...data, order, speakers: { create: this.enlaces(body.speakers) } },
     });
+  }
+
+  // Orden entre las sesiones que empiezan a la misma hora el mismo día.
+  // Recibe los ids en el orden deseado; todas deben compartir día y hora.
+  async reorderSessions(ids: any) {
+    if (!Array.isArray(ids) || ids.length < 2 || ids.some((x) => typeof x !== 'string'))
+      throw new BadRequestException('Lista de sesiones no válida.');
+    const sesiones = await this.prismaService.mexSession.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, dayId: true, startTime: true },
+    });
+    if (sesiones.length !== new Set(ids).size || sesiones.length !== ids.length)
+      throw new BadRequestException('Alguna sesión ya no existe. Recarga la página.');
+    const [p] = sesiones;
+    if (sesiones.some((s) => s.dayId !== p.dayId || s.startTime !== p.startTime))
+      throw new BadRequestException('Solo se pueden ordenar entre sí las sesiones del mismo día y la misma hora.');
+    await this.prismaService.$transaction(
+      ids.map((id, i) => this.prismaService.mexSession.update({ where: { id }, data: { order: i + 1 } })),
+    );
   }
 
   // Las actividades de Capacita se editan allá; aquí solo se muestran u ocultan.
@@ -225,4 +245,11 @@ export class MujeresExportacionService {
   deleteSpeaker(id: string) {
     return this.prismaService.mexSpeaker.delete({ where: { id } });
   }
+}
+
+// Siguiente posición para una sesión nueva: queda después de las que ya
+// empiezan a esa misma hora ese día (respeta el orden que puso el admin).
+export async function siguienteOrden(prisma: any, dayId: string, startTime: string) {
+  const max = await prisma.mexSession.aggregate({ where: { dayId, startTime }, _max: { order: true } });
+  return (max._max.order || 0) + 1;
 }
