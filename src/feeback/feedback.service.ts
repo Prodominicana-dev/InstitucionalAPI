@@ -46,7 +46,6 @@ export class FeedbackService {
         select: {
           id: true,
           name: true,
-          email: true,
           message: true,
           rating: true,
           createdAt: true,
